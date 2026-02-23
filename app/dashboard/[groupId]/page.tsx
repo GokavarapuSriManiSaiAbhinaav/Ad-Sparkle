@@ -568,29 +568,29 @@ export default function GroupDetailPage() {
     const isSelectionComplete = selectedYear !== "" && selectedMonth !== "";
 
     return (
-        <main className="min-h-screen bg-[#0F0F12] text-white pb-20">
+        <main className="min-h-screen bg-background text-foreground pb-20">
             {/* ── Header Bar ─────────────────────────────────────────────────── */}
             <div
-                className="sticky top-0 z-10 w-full border-b border-[#27272A] shadow-sm bg-[#0F0F12]/80 backdrop-blur-md"
+                className="sticky top-0 z-10 w-full border-b border-border shadow-sm bg-background/80 backdrop-blur-md"
             >
                 <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
                     >
                         <ArrowLeft className="h-4 w-4" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-base font-bold text-white leading-tight truncate">
+                        <h1 className="text-base font-bold text-foreground leading-tight truncate">
                             {isFetchingGroup ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-white/70" />
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             ) : group ? (
                                 group.name
                             ) : (
                                 "Loading Group..."
                             )}
                         </h1>
-                        <p className="text-xs text-white/50 leading-none mt-0.5 truncate">
+                        <p className="text-xs text-muted-foreground/70 leading-none mt-0.5 truncate">
                             Group Detail
                         </p>
                     </div>
@@ -609,7 +609,7 @@ export default function GroupDetailPage() {
                 <div className="mb-6 space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
-                            <SelectTrigger className="rounded-xl h-11 bg-[#18181B]">
+                            <SelectTrigger className="rounded-xl h-11 bg-card">
                                 <SelectValue placeholder="Select Year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -622,7 +622,7 @@ export default function GroupDetailPage() {
                         </Select>
 
                         <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger className="rounded-xl h-11 bg-[#18181B]">
+                            <SelectTrigger className="rounded-xl h-11 bg-card">
                                 <SelectValue placeholder="Select Month" />
                             </SelectTrigger>
                             <SelectContent>
@@ -675,10 +675,10 @@ export default function GroupDetailPage() {
                         animate={{ opacity: 1 }}
                         className="mt-12 flex flex-col items-center justify-center text-center px-4"
                     >
-                        <div className="h-12 w-12 rounded-full bg-[#27272A]/40 flex items-center justify-center mb-4">
-                            <CalendarDays className="h-6 w-6 text-[#A1A1AA]/60" />
+                        <div className="h-12 w-12 rounded-full bg-muted/40 flex items-center justify-center mb-4">
+                            <CalendarDays className="h-6 w-6 text-muted-foreground/60" />
                         </div>
-                        <p className="text-sm font-medium text-[#A1A1AA]">
+                        <p className="text-sm font-medium text-muted-foreground">
                             Please select year and month to view members.
                         </p>
                     </motion.div>
@@ -704,24 +704,24 @@ export default function GroupDetailPage() {
                                             Add Member
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-[#27272A] shadow-2xl">
+                                    <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-border shadow-2xl">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl font-bold tracking-tight">Add New Member</DialogTitle>
                                         </DialogHeader>
                                         <form onSubmit={handleAddMember} className="space-y-4 mt-2">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                     Name (Optional)
                                                 </label>
                                                 <Input
                                                     placeholder="John Doe"
                                                     value={newMemberName}
                                                     onChange={(e) => setNewMemberName(e.target.value)}
-                                                    className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                    className="h-11 rounded-xl bg-background border-border border-border"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                     Phone (Required)
                                                 </label>
                                                 <Input
@@ -729,11 +729,11 @@ export default function GroupDetailPage() {
                                                     value={newMemberPhone}
                                                     onChange={(e) => setNewMemberPhone(e.target.value)}
                                                     required
-                                                    className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                    className="h-11 rounded-xl bg-background border-border border-border"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                     UPI ID (Required)
                                                 </label>
                                                 <Input
@@ -741,11 +741,11 @@ export default function GroupDetailPage() {
                                                     value={newMemberUpiId}
                                                     onChange={(e) => setNewMemberUpiId(e.target.value)}
                                                     required
-                                                    className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                    className="h-11 rounded-xl bg-background border-border border-border"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                     Days (Optional)
                                                 </label>
                                                 <Input
@@ -753,7 +753,7 @@ export default function GroupDetailPage() {
                                                     placeholder="0"
                                                     value={newMemberDays}
                                                     onChange={(e) => setNewMemberDays(e.target.value)}
-                                                    className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                    className="h-11 rounded-xl bg-background border-border border-border"
                                                 />
                                             </div>
                                             <Button
@@ -772,20 +772,20 @@ export default function GroupDetailPage() {
                             {/* Search and Filter */}
                             <div className="space-y-3">
                                 <div className="relative">
-                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#A1A1AA]" />
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input
                                         placeholder="Search members by name, phone or UPI..."
-                                        className="pl-10 h-11 rounded-xl bg-[#18181B] border-[#27272A] shadow-sm"
+                                        className="pl-10 h-11 rounded-xl bg-card border-border shadow-sm"
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
                                 <div className="flex gap-2">
                                     <Select value={daysFilter} onValueChange={setDaysFilter}>
-                                        <SelectTrigger className="flex-1 h-11 rounded-xl bg-[#18181B] border-[#27272A] shadow-sm font-medium">
-                                            <div className="flex items-center gap-2 text-[#A1A1AA]">
+                                        <SelectTrigger className="flex-1 h-11 rounded-xl bg-card border-border shadow-sm font-medium">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
                                                 <Filter className="h-4 w-4 shrink-0" />
-                                                <span className="text-white truncate"><SelectValue placeholder="Filter by Days" /></span>
+                                                <span className="text-foreground truncate"><SelectValue placeholder="Filter by Days" /></span>
                                             </div>
                                         </SelectTrigger>
                                         <SelectContent>
@@ -813,7 +813,7 @@ export default function GroupDetailPage() {
                                                     placeholder="Exact days"
                                                     value={customDaysFilter}
                                                     onChange={(e) => setCustomDaysFilter(e.target.value)}
-                                                    className="h-11 rounded-xl bg-[#18181B] border-[#27272A] shadow-sm"
+                                                    className="h-11 rounded-xl bg-card border-border shadow-sm"
                                                 />
                                             </motion.div>
                                         )}
@@ -823,13 +823,13 @@ export default function GroupDetailPage() {
 
                             {/* Empty state for Search/Filter */}
                             {mergedData.length === 0 && (
-                                <div className="rounded-2xl border border-dashed border-[#27272A]/70 bg-[#27272A]/20 py-12 flex flex-col items-center gap-3 text-center">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#27272A]/50 text-[#A1A1AA]">
+                                <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 py-12 flex flex-col items-center gap-3 text-center">
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground">
                                         <Users className="h-6 w-6" />
                                     </div>
                                     <div>
                                         <p className="font-semibold text-sm">No members found</p>
-                                        <p className="text-xs text-[#A1A1AA] mt-1 px-4">
+                                        <p className="text-xs text-muted-foreground mt-1 px-4">
                                             No active promoters matched the filters for{" "}
                                             {MONTHS.find((m) => m.value === selectedMonth)?.label}{" "}
                                             {selectedYear}.
@@ -851,20 +851,20 @@ export default function GroupDetailPage() {
                                                 transition={{ duration: 0.2 }}
                                                 layout
                                             >
-                                                <Card className={`rounded-2xl border shadow-md hover:shadow-lg hover:shadow-[#7C3AED]/10 hover:-translate-y-1 overflow-hidden transition-all duration-300 ${member.payment_completed
+                                                <Card className={`rounded-2xl border shadow-md hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1 overflow-hidden transition-all duration-300 ${member.payment_completed
                                                     ? "bg-green-500/5 border-green-500/30 border-l-4 border-l-green-500 shadow-[0_0_15px_rgba(34,197,94,0.1)]"
-                                                    : "bg-[#18181B] border-[#27272A] p-0 hover:border-[#7C3AED]/30"
+                                                    : "bg-card border-border p-0 hover:border-primary/30"
                                                     }`}>
                                                     <div className="p-4 flex flex-col gap-3.5">
                                                         {/* Top Row: Info */}
                                                         <div className="flex justify-between items-start gap-3">
                                                             <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] text-xs font-semibold text-white mt-0.5">
+                                                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] text-xs font-semibold text-foreground mt-0.5">
                                                                     {idx + 1}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-center gap-2">
-                                                                        <h3 className="text-sm font-bold truncate dark:text-white text-gray-900">
+                                                                        <h3 className="text-sm font-bold truncate dark:text-foreground text-gray-900">
                                                                             {member.name}
                                                                         </h3>
                                                                         {member.payment_completed && (
@@ -874,7 +874,7 @@ export default function GroupDetailPage() {
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <p className="text-xs text-[#A1A1AA] flex items-center gap-1.5 mt-1 truncate">
+                                                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 truncate">
                                                                         <Phone className="h-3 w-3 flex-shrink-0" />
                                                                         {member.phone || "N/A"}
                                                                     </p>
@@ -896,30 +896,30 @@ export default function GroupDetailPage() {
                                                                     <Button
                                                                         variant="ghost"
                                                                         size="icon"
-                                                                        className="h-8 w-8 text-[#A1A1AA] hover:text-white shrink-0 rounded-lg -mr-1 -mt-1"
+                                                                        className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0 rounded-lg -mr-1 -mt-1"
                                                                     >
                                                                         <Edit2 className="h-4 w-4" />
                                                                     </Button>
                                                                 </DialogTrigger>
 
-                                                                <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-[#27272A] shadow-2xl">
+                                                                <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-border shadow-2xl">
                                                                     <DialogHeader>
                                                                         <DialogTitle className="text-xl font-bold tracking-tight">Edit Member</DialogTitle>
                                                                     </DialogHeader>
                                                                     <form onSubmit={handleEditSave} className="space-y-4 mt-2">
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                                                 Name
                                                                             </label>
                                                                             <Input
                                                                                 placeholder="Name"
                                                                                 value={editName}
                                                                                 onChange={(e) => setEditName(e.target.value)}
-                                                                                className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                                                className="h-11 rounded-xl bg-background border-border border-border"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                                                 Phone (Required)
                                                                             </label>
                                                                             <Input
@@ -927,11 +927,11 @@ export default function GroupDetailPage() {
                                                                                 value={editPhone}
                                                                                 onChange={(e) => setEditPhone(e.target.value)}
                                                                                 required
-                                                                                className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                                                className="h-11 rounded-xl bg-background border-border border-border"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                                                 UPI ID (Required)
                                                                             </label>
                                                                             <Input
@@ -939,11 +939,11 @@ export default function GroupDetailPage() {
                                                                                 value={editUpiId}
                                                                                 onChange={(e) => setEditUpiId(e.target.value)}
                                                                                 required
-                                                                                className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                                                className="h-11 rounded-xl bg-background border-border border-border"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                                                 Days
                                                                             </label>
                                                                             <Input
@@ -951,7 +951,7 @@ export default function GroupDetailPage() {
                                                                                 placeholder="0"
                                                                                 value={editDays}
                                                                                 onChange={(e) => setEditDays(e.target.value)}
-                                                                                className="h-11 rounded-xl bg-[#0F0F12] border-[#27272A] border-[#27272A]"
+                                                                                className="h-11 rounded-xl bg-background border-border border-border"
                                                                             />
                                                                         </div>
 
@@ -985,10 +985,10 @@ export default function GroupDetailPage() {
                                                         {/* Bottom Row: Actions */}
                                                         <div className="flex items-center justify-between gap-4">
                                                             <div className="flex flex-col">
-                                                                <span className="text-[10px] uppercase tracking-wider text-[#A1A1AA] font-semibold">
+                                                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                                                                     Days
                                                                 </span>
-                                                                <span className="text-sm font-bold mt-0.5 dark:text-white text-gray-900">
+                                                                <span className="text-sm font-bold mt-0.5 dark:text-foreground text-gray-900">
                                                                     {member.days}
                                                                 </span>
                                                             </div>
@@ -1000,38 +1000,38 @@ export default function GroupDetailPage() {
                                                                             size="sm"
                                                                             variant={member.payment_completed ? "secondary" : "default"}
                                                                             className={`h-8 text-xs font-medium rounded-lg px-4 shadow-sm transition-all ${!member.payment_completed
-                                                                                ? "text-white bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:from-[#6D28D9] hover:to-[#4C1D95] border-none shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]"
+                                                                                ? "text-foreground bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:from-[#6D28D9] hover:to-[#4C1D95] border-none shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]"
                                                                                 : ""
                                                                                 }`}
                                                                         >
                                                                             {member.payment_completed ? "Paid" : "Pay"}
                                                                         </Button>
                                                                     </DialogTrigger>
-                                                                    <DialogContent className="max-w-[320px] rounded-3xl p-6 border-[#27272A] shadow-2xl" showCloseButton={false}>
+                                                                    <DialogContent className="max-w-[320px] rounded-3xl p-6 border-border shadow-2xl" showCloseButton={false}>
                                                                         <DialogHeader>
                                                                             <DialogTitle className="text-center text-xl font-bold tracking-tight">Pay {member.name}</DialogTitle>
                                                                         </DialogHeader>
                                                                         <div className="flex flex-col gap-3 mt-4">
                                                                             <Button
                                                                                 onClick={() => handleUpiPayment(member)}
-                                                                                className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                                                                className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
                                                                             >
                                                                                 Pay via PhonePe
                                                                             </Button>
                                                                             <Button
                                                                                 onClick={() => handleUpiPayment(member)}
-                                                                                className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                                                                className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
                                                                             >
                                                                                 Pay via GPay
                                                                             </Button>
-                                                                            <p className="text-xs text-center text-[#A1A1AA] mt-3 px-2 leading-relaxed">
+                                                                            <p className="text-xs text-center text-muted-foreground mt-3 px-2 leading-relaxed">
                                                                                 Complete payment on your device, then manually check the box to mark as paid.
                                                                             </p>
                                                                         </div>
                                                                     </DialogContent>
                                                                 </Dialog>
 
-                                                                <div className="flex items-center justify-center bg-[#0F0F12] border-[#27272A] p-1.5 rounded-md border border-[#27272A] shadow-sm transition-colors hover:bg-[#27272A]/50">
+                                                                <div className="flex items-center justify-center bg-background border-border p-1.5 rounded-md border border-border shadow-sm transition-colors hover:bg-muted/50">
                                                                     <Checkbox
                                                                         checked={member.payment_completed}
                                                                         disabled={loadingPayments.has(member.id)}
