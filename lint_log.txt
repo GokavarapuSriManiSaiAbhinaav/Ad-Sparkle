@@ -1,0 +1,31 @@
+
+> ad-sparkle-admin@0.1.0 lint
+> eslint
+
+
+D:\ad-sparkle-admin\app\dashboard\[groupId]\page.tsx
+   44:20  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   55:20  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+   65:20  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  114:56  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  142:27  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  195:24  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  213:23  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  220:39  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  220:44  warning  'upiApp' is defined but never used                                                                                   @typescript-eslint/no-unused-vars
+  310:25  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  317:48  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  347:23  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  406:25  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  435:25  error    Unexpected any. Specify a different type                                                                             @typescript-eslint/no-explicit-any
+  447:8   warning  React Hook useEffect has a missing dependency: 'hasLoadedMembers'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+D:\ad-sparkle-admin\app\login\page.tsx
+  62:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\ad-sparkle-admin\check_error.js
+  1:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+✖ 18 problems (16 errors, 2 warnings)
+

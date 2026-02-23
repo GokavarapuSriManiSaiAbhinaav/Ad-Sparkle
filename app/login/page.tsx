@@ -14,12 +14,13 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Sparkles, Loader2, LogIn } from "lucide-react";
+import { Sparkle, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
     const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -67,101 +68,97 @@ export default function LoginPage() {
     };
 
     return (
-        <main
-            className="min-h-screen flex items-center justify-center p-6 text-foreground relative overflow-hidden"
-            style={{
-                background:
-                    "linear-gradient(135deg, oklch(0.18 0.02 285) 0%, oklch(0.14 0.005 285) 100%)",
-            }}
-        >
+        <main className="min-h-screen flex items-center justify-center p-6 bg-[#0F0F12] text-white relative overflow-hidden font-sans selection:bg-[#7C3AED]/30">
             {/* Background glow effect */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-primary/20 rounded-full blur-[120px] pointer-events-none" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#7C3AED]/10 rounded-full blur-[150px] pointer-events-none -z-10" />
 
             <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ duration: 0.5, type: "spring", stiffness: 200, damping: 20 }}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
                 className="w-full max-w-md mx-auto relative z-10"
             >
-                <Card className="rounded-2xl border-border/60 shadow-2xl bg-card overflow-hidden">
-                    <CardHeader className="space-y-3 pb-6 text-center pt-8">
-                        <div className="flex justify-center mb-2">
-                            <div
-                                className="flex h-12 w-12 items-center justify-center rounded-xl shadow-lg"
-                                style={{
-                                    background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                                }}
-                            >
-                                <Sparkles className="h-6 w-6 text-white" />
-                            </div>
-                        </div>
-                        <CardTitle className="text-2xl font-bold tracking-tight">
-                            Admin Login
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                            Welcome back to AdSparkle. Please enter your credentials to access the admin dashboard.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="px-8 pb-8">
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                    Email
-                                </label>
-                                <Input
-                                    type="email"
-                                    placeholder="admin@adsparkle.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    disabled={loading}
-                                    className="h-12 rounded-xl bg-muted/30 border-border/50 focus-visible:ring-primary/50"
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                                        Password
-                                    </label>
+                <div className="rounded-3xl border border-[#27272A] bg-[#18181B] shadow-2xl overflow-hidden p-2">
+                    <Card className="border-0 bg-transparent shadow-none">
+                        <CardHeader className="space-y-3 pb-6 text-center pt-8">
+                            <div className="flex justify-center mb-2">
+                                <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-[#27272A]/50 shadow-inner" style={{ background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)" }}>
+                                    <Sparkle className="h-6 w-6 text-white" />
                                 </div>
-                                <Input
-                                    type="password"
-                                    placeholder="••••••••"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    disabled={loading}
-                                    className="h-12 rounded-xl bg-muted/30 border-border/50 focus-visible:ring-primary/50"
-                                    required
-                                />
                             </div>
+                            <CardTitle className="text-2xl font-bold tracking-tight text-white">
+                                Admin Login
+                            </CardTitle>
+                            <CardDescription className="text-sm text-[#A1A1AA]">
+                                Enter your credentials to access the AdSparkle dashboard.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="px-8 pb-8">
+                            <form onSubmit={handleLogin} className="space-y-5">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                        Email
+                                    </label>
+                                    <Input
+                                        type="email"
+                                        placeholder="admin@adsparkle.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        disabled={loading}
+                                        className="h-12 rounded-xl bg-[#0F0F12] border-[#27272A] text-white placeholder:text-[#3F3F46] focus-visible:ring-2 focus-visible:ring-[#7C3AED]/50 focus-visible:border-[#7C3AED] transition-all"
+                                        required
+                                    />
+                                </div>
 
-                            <div className="pt-2">
-                                <Button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="w-full h-12 rounded-xl text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all disabled:opacity-70"
-                                    style={{
-                                        background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                                        color: "white",
-                                    }}
-                                >
-                                    {loading ? (
-                                        <>
-                                            <Loader2 className="h-5 w-5 animate-spin" />
-                                            Logging in...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <LogIn className="h-5 w-5" />
-                                            Sign in securely
-                                        </>
-                                    )}
-                                </Button>
-                            </div>
-                        </form>
-                    </CardContent>
-                </Card>
+                                <div className="space-y-2">
+                                    <div className="flex items-center justify-between">
+                                        <label className="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wider">
+                                            Password
+                                        </label>
+                                    </div>
+                                    <div className="relative">
+                                        <Input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="••••••••"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            disabled={loading}
+                                            className="h-12 rounded-xl bg-[#0F0F12] border-[#27272A] text-white placeholder:text-[#3F3F46] focus-visible:ring-2 focus-visible:ring-[#7C3AED]/50 focus-visible:border-[#7C3AED] transition-all pr-12"
+                                            required
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1A1AA] hover:text-white transition-colors h-8 w-8 flex items-center justify-center rounded-lg hover:bg-[#27272A]"
+                                        >
+                                            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4">
+                                    <Button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full h-12 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-all disabled:opacity-70 text-white bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:from-[#6D28D9] hover:to-[#4C1D95] border border-[#7C3AED]/30 shadow-[0_0_20px_rgba(124,58,237,0.15)] hover:shadow-[0_0_25px_rgba(124,58,237,0.25)] hover:-translate-y-0.5"
+                                    >
+                                        {loading ? (
+                                            <>
+                                                <Loader2 className="h-5 w-5 animate-spin" />
+                                                Verifying...
+                                            </>
+                                        ) : (
+                                            <>
+                                                Sign In
+                                                <ArrowRight className="h-4 w-4" />
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
+                            </form>
+                        </CardContent>
+                    </Card>
+                </div>
             </motion.div>
         </main>
     );

@@ -4,20 +4,9 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from "@/components/ui/card";
-import {
-    Users,
-    ChevronRight,
-    Sparkles,
-    AlertCircle,
-    Loader2,
-} from "lucide-react";
+import { AlertCircle, Loader2, LogOut, Users, ChevronRight, Sparkles } from "lucide-react";
+import { ThemeToggle } from "@/components/theme-toggle";
+import { ProfileDropdown } from "@/components/profile-dropdown";
 
 type Group = {
     id: string;
@@ -27,24 +16,15 @@ type Group = {
     [key: string]: unknown;
 };
 
-// ── Accent colours cycling per card ─────────────────────────────────────────
-const ACCENTS = [
-    { from: "#6366f1", to: "#8b5cf6" }, // indigo → violet
-    { from: "#0ea5e9", to: "#06b6d4" }, // sky → cyan
-    { from: "#f43f5e", to: "#ec4899" }, // rose → pink
-    { from: "#10b981", to: "#14b8a6" }, // emerald → teal
-    { from: "#f59e0b", to: "#f97316" }, // amber → orange
-];
-
 // ── Skeleton card ────────────────────────────────────────────────────────────
 function SkeletonCard() {
     return (
-        <div className="rounded-2xl border border-border bg-card p-5 shadow-sm animate-pulse">
+        <div className="rounded-2xl border border-[#27272A] bg-[#18181B] p-6 shadow-sm animate-pulse">
             <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-xl bg-muted" />
-                <div className="flex-1 space-y-2">
-                    <div className="h-4 w-2/3 rounded bg-muted" />
-                    <div className="h-3 w-1/2 rounded bg-muted" />
+                <div className="h-14 w-14 rounded-2xl bg-[#27272A]" />
+                <div className="flex-1 space-y-3">
+                    <div className="h-5 w-1/3 rounded bg-[#27272A]" />
+                    <div className="h-4 w-2/3 rounded bg-[#27272A]/70" />
                 </div>
             </div>
         </div>
@@ -76,55 +56,54 @@ export default function DashboardPage() {
     }, []);
 
     return (
-        <main className="min-h-screen bg-background text-foreground">
+        <main className="min-h-screen bg-[#0F0F12] text-white relative overflow-hidden font-sans selection:bg-[#7C3AED]/30">
+            {/* Subtle radial glow behind content */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+
             {/* ── Top header bar ─────────────────────────────────────────────── */}
-            <div
-                className="w-full border-b border-border/60"
-                style={{
-                    background:
-                        "linear-gradient(135deg, oklch(0.18 0.02 285) 0%, oklch(0.14 0.005 285) 100%)",
-                }}
-            >
-                <div className="max-w-md mx-auto px-4 py-5 flex items-center gap-3">
-                    <div
-                        className="flex h-9 w-9 items-center justify-center rounded-xl shadow-lg"
-                        style={{
-                            background: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-                        }}
-                    >
-                        <Sparkles className="h-4 w-4 text-white" />
+            <div className="w-full bg-[#0F0F12]/80 backdrop-blur-md border-b border-[#27272A] shadow-sm sticky top-0 z-20">
+                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div
+                            className="flex h-10 w-10 items-center justify-center rounded-xl shadow-md border border-[#27272A]/50"
+                            style={{
+                                background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
+                            }}
+                        >
+                            <Sparkles className="h-5 w-5 text-white" />
+                        </div>
+                        <div>
+                            <h1 className="text-lg font-bold text-white leading-tight tracking-tight">
+                                AdSparkle Admin
+                            </h1>
+                            <p className="text-sm font-medium text-[#A1A1AA] leading-none mt-0.5">
+                                Group Management
+                            </p>
+                        </div>
                     </div>
-                    <div>
-                        <h1 className="text-base font-bold text-white leading-tight tracking-tight">
-                            AdSparkle Admin
-                        </h1>
-                        <p className="text-xs text-white/50 leading-none mt-0.5">
-                            Group Management
-                        </p>
+                    <div className="flex items-center gap-2">
+                        <ThemeToggle />
+                        <ProfileDropdown />
                     </div>
                 </div>
             </div>
 
             {/* ── Content ─────────────────────────────────────────────────────── */}
-            <div className="max-w-md mx-auto p-4 pt-6">
+            <div className="max-w-5xl mx-auto px-6 py-10 relative z-10">
                 {/* Section heading */}
-                <div className="mb-5">
-                    <h2 className="text-lg font-bold tracking-tight">Your Groups</h2>
-                    <p className="text-sm text-muted-foreground mt-0.5">
-                        Select a group to manage its campaigns
+                <div className="mb-10 pl-2">
+                    <h2 className="text-2xl font-bold tracking-tight text-white">Your Groups</h2>
+                    <p className="text-base text-[#A1A1AA] mt-1 font-medium">
+                        Select a group to manage promoters and track payments.
                     </p>
                 </div>
 
                 {/* ── Loading state ────────────────────────────────────────────── */}
                 {loading && (
-                    <div className="space-y-3">
-                        {[...Array(4)].map((_, i) => (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[...Array(6)].map((_, i) => (
                             <SkeletonCard key={i} />
                         ))}
-                        <div className="flex items-center justify-center gap-2 pt-2 text-sm text-muted-foreground">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span>Loading groups…</span>
-                        </div>
                     </div>
                 )}
 
@@ -133,16 +112,16 @@ export default function DashboardPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-destructive/30 bg-destructive/10 p-5 flex items-start gap-4"
+                        className="rounded-2xl border border-red-500/20 bg-red-500/10 p-6 flex items-start gap-4 max-w-2xl"
                     >
                         <div className="flex-shrink-0 mt-0.5">
-                            <AlertCircle className="h-5 w-5 text-destructive" />
+                            <AlertCircle className="h-6 w-6 text-red-400" />
                         </div>
                         <div>
-                            <p className="font-semibold text-destructive text-sm">
+                            <p className="font-semibold text-red-400 text-base">
                                 Unable to load groups
                             </p>
-                            <p className="text-xs text-muted-foreground mt-1">{error}</p>
+                            <p className="text-sm text-red-300 mt-1">{error}</p>
                         </div>
                     </motion.div>
                 )}
@@ -152,15 +131,15 @@ export default function DashboardPage() {
                     <motion.div
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="rounded-2xl border border-dashed border-border bg-muted/30 py-14 flex flex-col items-center gap-3 text-center"
+                        className="rounded-3xl border border-dashed border-[#27272A] bg-[#18181B]/50 shadow-sm py-20 flex flex-col items-center gap-4 text-center"
                     >
-                        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-                            <Users className="h-6 w-6 text-muted-foreground" />
+                        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-[#27272A]/50 shadow-sm border border-[#27272A]">
+                            <Users className="h-8 w-8 text-[#A1A1AA]" />
                         </div>
                         <div>
-                            <p className="font-semibold text-sm">No groups yet</p>
-                            <p className="text-xs text-muted-foreground mt-1">
-                                Create your first group in Supabase to get started.
+                            <p className="font-semibold text-lg text-white">No groups yet</p>
+                            <p className="text-sm text-[#A1A1AA] mt-1 max-w-sm mx-auto">
+                                Manage your groups within Supabase to make them appear here.
                             </p>
                         </div>
                     </motion.div>
@@ -170,16 +149,15 @@ export default function DashboardPage() {
                 <AnimatePresence>
                     {!loading && !error && groups.length > 0 && (
                         <motion.div
-                            className="space-y-3"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
                             initial="hidden"
                             animate="visible"
                             variants={{
                                 hidden: {},
-                                visible: { transition: { staggerChildren: 0.07 } },
+                                visible: { transition: { staggerChildren: 0.1 } },
                             }}
                         >
-                            {groups.map((group, idx) => {
-                                const accent = ACCENTS[idx % ACCENTS.length];
+                            {groups.map((group) => {
                                 const initials = (group.name || "G")
                                     .split(" ")
                                     .slice(0, 2)
@@ -191,58 +169,40 @@ export default function DashboardPage() {
                                     <motion.div
                                         key={group.id}
                                         variants={{
-                                            hidden: { opacity: 0, y: 16 },
-                                            visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
+                                            hidden: { opacity: 0, scale: 0.95, y: 20 },
+                                            visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
                                         }}
+                                        onClick={() => router.push(`/dashboard/${group.id}`)}
+                                        className="cursor-pointer group block"
                                     >
-                                        <motion.div
-                                            whileHover={{ scale: 1.025 }}
-                                            whileTap={{ scale: 0.975 }}
-                                            transition={{ type: "spring", stiffness: 400, damping: 22 }}
-                                            onClick={() => router.push(`/dashboard/${group.id}`)}
-                                            className="cursor-pointer"
-                                        >
-                                            <Card className="overflow-hidden border-border/70 shadow-sm hover:shadow-md transition-shadow duration-200 py-0 gap-0">
-                                                <CardHeader className="p-5 pb-0">
-                                                    <div className="flex items-center gap-4">
-                                                        {/* Avatar */}
-                                                        <div
-                                                            className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl text-white font-bold text-sm shadow"
-                                                            style={{
-                                                                background: `linear-gradient(135deg, ${accent.from} 0%, ${accent.to} 100%)`,
-                                                            }}
-                                                        >
-                                                            {initials}
-                                                        </div>
+                                        <div className="bg-[#18181B] rounded-2xl shadow-lg hover:shadow-xl hover:shadow-[#7C3AED]/10 hover:-translate-y-1 transition-all duration-300 border border-[#27272A] hover:border-[#7C3AED]/30 h-full flex flex-col overflow-hidden relative">
+                                            {/* Top accent line */}
+                                            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] to-[#4C1D95] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                                                        {/* Text */}
-                                                        <div className="flex-1 min-w-0">
-                                                            <CardTitle className="text-sm font-semibold truncate">
-                                                                {group.name}
-                                                            </CardTitle>
-                                                            {group.description && (
-                                                                <CardDescription className="text-xs mt-0.5 truncate">
-                                                                    {group.description}
-                                                                </CardDescription>
-                                                            )}
-                                                        </div>
+                                            <div className="p-6 flex items-start gap-4 flex-1">
+                                                {/* Avatar */}
+                                                <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl text-white font-bold text-lg shadow-md border border-[#27272A]/50"
+                                                    style={{ background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)" }}>
+                                                    {initials}
+                                                </div>
 
-                                                        {/* Arrow */}
-                                                        <ChevronRight className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                                    </div>
-                                                </CardHeader>
-
-                                                <CardContent className="px-5 pb-5 pt-4">
-                                                    {/* Bottom accent stripe */}
-                                                    <div
-                                                        className="h-1 w-full rounded-full opacity-30"
-                                                        style={{
-                                                            background: `linear-gradient(90deg, ${accent.from} 0%, ${accent.to} 100%)`,
-                                                        }}
-                                                    />
-                                                </CardContent>
-                                            </Card>
-                                        </motion.div>
+                                                {/* Text */}
+                                                <div className="flex-1 min-w-0 pt-1">
+                                                    <h3 className="text-lg font-semibold text-white truncate transition-colors drop-shadow-sm">
+                                                        {group.name}
+                                                    </h3>
+                                                    {group.description && (
+                                                        <p className="text-sm font-medium text-[#A1A1AA] mt-1.5 line-clamp-2 leading-relaxed">
+                                                            {group.description}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="mt-auto border-t border-[#27272A] p-4 px-6 flex justify-between items-center bg-[#131316] group-hover:bg-[#18181B] transition-colors">
+                                                <span className="text-[11px] font-bold text-[#A1A1AA] uppercase tracking-widest group-hover:text-white transition-colors">Manage group</span>
+                                                <ChevronRight className="h-4 w-4 text-[#A1A1AA] group-hover:text-[#7C3AED] group-hover:translate-x-1 transition-all duration-300" />
+                                            </div>
+                                        </div>
                                     </motion.div>
                                 );
                             })}
