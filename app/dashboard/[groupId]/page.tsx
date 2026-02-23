@@ -34,6 +34,7 @@ import {
     AlertCircle,
     Users,
     CalendarDays,
+    Filter,
 } from "lucide-react";
 
 type Group = {
@@ -48,6 +49,7 @@ type Promoter = {
     group_id: string;
     name: string;
     phone: string;
+    upi_id?: string;
     join_date: string;
     leave_date?: string | null;
     [key: string]: any;
@@ -104,6 +106,7 @@ export default function GroupDetailPage() {
     const [isAddMemberOpen, setIsAddMemberOpen] = useState(false);
     const [newMemberName, setNewMemberName] = useState("");
     const [newMemberPhone, setNewMemberPhone] = useState("");
+    const [newMemberUpiId, setNewMemberUpiId] = useState("");
     const [newMemberDays, setNewMemberDays] = useState("");
     const [isAddingMember, setIsAddingMember] = useState(false);
 
@@ -111,9 +114,14 @@ export default function GroupDetailPage() {
     const [editingMember, setEditingMember] = useState<any>(null);
     const [editName, setEditName] = useState("");
     const [editPhone, setEditPhone] = useState("");
+    const [editUpiId, setEditUpiId] = useState("");
     const [editDays, setEditDays] = useState("");
     const [isUpdating, setIsUpdating] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
+
+    // Filter states
+    const [daysFilter, setDaysFilter] = useState("all");
+    const [customDaysFilter, setCustomDaysFilter] = useState("");
 
     // 1. Fetch Group details on initial load
     useEffect(() => {
@@ -210,18 +218,16 @@ export default function GroupDetailPage() {
     };
 
     const handleUpiPayment = (member: any, upiApp: "phonepe" | "gpay") => {
-        const phone = member.phone?.trim();
+        const upiId = member.upi_id?.trim();
 
-        if (!phone) {
-            toast.error("Contact number is missing for this member. Cannot initiate payment.");
+        if (!upiId) {
+            toast.error("UPI ID is missing for this member. Cannot initiate payment.");
             return;
         }
 
         const name = encodeURIComponent(member.name || "Promoter");
 
-        const upiLink = upiApp === "phonepe"
-            ? `upi://pay?pa=${phone}@upi&pn=${name}&am=0`
-            : `tez://upi/pay?pa=${phone}@upi&pn=${name}&am=0`;
+        const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=500`;
 
         console.log("Generated UPI Link:", upiLink);
 
@@ -240,6 +246,11 @@ export default function GroupDetailPage() {
 
         if (!newMemberPhone.trim()) {
             toast.error("Phone number is required.");
+            return;
+        }
+
+        if (!newMemberUpiId.trim()) {
+            toast.error("UPI ID is required.");
             return;
         }
 
@@ -262,6 +273,7 @@ export default function GroupDetailPage() {
                     group_id: groupId,
                     name: newMemberName.trim() || undefined,
                     phone: newMemberPhone.trim(),
+                    upi_id: newMemberUpiId.trim(),
                     join_date: joinDate,
                 })
                 .select()
@@ -289,6 +301,7 @@ export default function GroupDetailPage() {
             // Reset fields
             setNewMemberName("");
             setNewMemberPhone("");
+            setNewMemberUpiId("");
             setNewMemberDays("");
 
             // Reload members
@@ -343,6 +356,11 @@ export default function GroupDetailPage() {
             return;
         }
 
+        if (!editUpiId.trim()) {
+            toast.error("UPI ID is required.");
+            return;
+        }
+
         setIsUpdating(true);
         try {
             const { error: pError } = await supabase
@@ -350,6 +368,7 @@ export default function GroupDetailPage() {
                 .update({
                     name: editName.trim() || null,
                     phone: editPhone.trim(),
+                    upi_id: editUpiId.trim(),
                 })
                 .eq("id", editingMember.id);
 
@@ -436,11 +455,12 @@ export default function GroupDetailPage() {
         const searchedPromoters = promoters.filter(
             (p) =>
                 p.name?.toLowerCase().includes(searchLower) ||
-                p.phone?.toLowerCase().includes(searchLower)
+                p.phone?.toLowerCase().includes(searchLower) ||
+                p.upi_id?.toLowerCase().includes(searchLower)
         );
 
         // Merge
-        return searchedPromoters.map((p) => {
+        const merged = searchedPromoters.map((p) => {
             const rec = monthlyRecords.find((r) => r.promoter_id === p.id);
             return {
                 ...p,
@@ -448,6 +468,22 @@ export default function GroupDetailPage() {
                 payment_completed: rec?.payment_completed || false,
                 record_id: rec?.id || null,
             };
+        });
+
+        // Apply days filter
+        return merged.filter((member) => {
+            const d = member.days;
+            if (daysFilter === "all") return true;
+            if (daysFilter === "0") return d === 0;
+            if (daysFilter === "1-10") return d >= 1 && d <= 10;
+            if (daysFilter === "11-20") return d >= 11 && d <= 20;
+            if (daysFilter === "21-30") return d >= 21 && d <= 30;
+            if (daysFilter === "custom") {
+                const customD = parseInt(customDaysFilter);
+                if (!isNaN(customD)) return d === customD;
+                return true;
+            }
+            return true;
         });
     })();
 
@@ -617,6 +653,18 @@ export default function GroupDetailPage() {
                                             </div>
                                             <div className="space-y-2">
                                                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                    UPI ID (Required)
+                                                </label>
+                                                <Input
+                                                    placeholder="user@upi"
+                                                    value={newMemberUpiId}
+                                                    onChange={(e) => setNewMemberUpiId(e.target.value)}
+                                                    required
+                                                    className="h-11 rounded-xl bg-muted/30 border-border/50"
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                                                     Days (Optional)
                                                 </label>
                                                 <Input
@@ -640,15 +688,54 @@ export default function GroupDetailPage() {
                                 </Dialog>
                             </div>
 
-                            {/* Search Area */}
-                            <div className="relative">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                <Input
-                                    placeholder="Search members by name or phone..."
-                                    className="pl-10 h-11 rounded-xl bg-card border-border/60 shadow-sm"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
+                            {/* Search and Filter */}
+                            <div className="space-y-3">
+                                <div className="relative">
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        placeholder="Search members by name, phone or UPI..."
+                                        className="pl-10 h-11 rounded-xl bg-card border-border/60 shadow-sm"
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex gap-2">
+                                    <Select value={daysFilter} onValueChange={setDaysFilter}>
+                                        <SelectTrigger className="flex-1 h-11 rounded-xl bg-card border-border/60 shadow-sm font-medium">
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Filter className="h-4 w-4 shrink-0" />
+                                                <span className="text-foreground truncate"><SelectValue placeholder="Filter by Days" /></span>
+                                            </div>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All</SelectItem>
+                                            <SelectItem value="0">0 days</SelectItem>
+                                            <SelectItem value="1-10">1–10 days</SelectItem>
+                                            <SelectItem value="11-20">11–20 days</SelectItem>
+                                            <SelectItem value="21-30">21–30 days</SelectItem>
+                                            <SelectItem value="custom">Custom exact match</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <AnimatePresence>
+                                        {daysFilter === "custom" && (
+                                            <motion.div
+                                                initial={{ opacity: 0, width: 0, scale: 0.95 }}
+                                                animate={{ opacity: 1, width: "auto", scale: 1 }}
+                                                exit={{ opacity: 0, width: 0, scale: 0.95 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="w-[120px]"
+                                            >
+                                                <Input
+                                                    type="number"
+                                                    placeholder="Exact days"
+                                                    value={customDaysFilter}
+                                                    onChange={(e) => setCustomDaysFilter(e.target.value)}
+                                                    className="h-11 rounded-xl bg-card border-border/60 shadow-sm"
+                                                />
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
 
                             {/* Empty state for Search/Filter */}
@@ -712,6 +799,7 @@ export default function GroupDetailPage() {
                                                                 setEditingMember(member);
                                                                 setEditName(member.name || "");
                                                                 setEditPhone(member.phone || "");
+                                                                setEditUpiId(member.upi_id || "");
                                                                 setEditDays(member.days?.toString() || "");
                                                             } else {
                                                                 setEditingMember(null);
@@ -751,6 +839,18 @@ export default function GroupDetailPage() {
                                                                             placeholder="Phone"
                                                                             value={editPhone}
                                                                             onChange={(e) => setEditPhone(e.target.value)}
+                                                                            required
+                                                                            className="h-11 rounded-xl bg-muted/30 border-border/50"
+                                                                        />
+                                                                    </div>
+                                                                    <div className="space-y-2">
+                                                                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                                            UPI ID (Required)
+                                                                        </label>
+                                                                        <Input
+                                                                            placeholder="UPI ID"
+                                                                            value={editUpiId}
+                                                                            onChange={(e) => setEditUpiId(e.target.value)}
                                                                             required
                                                                             className="h-11 rounded-xl bg-muted/30 border-border/50"
                                                                         />
