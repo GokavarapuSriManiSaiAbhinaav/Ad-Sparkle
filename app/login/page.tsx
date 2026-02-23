@@ -41,6 +41,22 @@ export default function LoginPage() {
                 throw error;
             }
 
+            // Verify if user is an admin
+            if (data?.user) {
+                const { data: admin, error: adminError } = await supabase
+                    .from("admins")
+                    .select("id")
+                    .eq("id", data.user.id)
+                    .single();
+
+                if (adminError || !admin) {
+                    await supabase.auth.signOut();
+                    toast.error("Access denied. Admin privileges required.");
+                    setLoading(false);
+                    return;
+                }
+            }
+
             toast.success("Successfully logged in!");
             router.push("/dashboard");
         } catch (error: any) {

@@ -61,7 +61,7 @@ export default function DashboardPage() {
     useEffect(() => {
         async function fetchGroups() {
             try {
-                const { data, error } = await supabase.from("groups").select("*");
+                const { data, error } = await supabase.from("groups").select("*").order("name", { ascending: true });
                 if (error) throw error;
                 setGroups(data ?? []);
             } catch (err: unknown) {
