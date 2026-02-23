@@ -227,7 +227,7 @@ export default function GroupDetailPage() {
 
         const name = encodeURIComponent(member.name || "Promoter");
 
-        const upiLink = `upi://pay?pa=${upiId}&pn=${name}&am=500`;
+        const upiLink = `upi://pay?pa=${upiId}&pn=${name}`;
 
         console.log("Generated UPI Link:", upiLink);
 
