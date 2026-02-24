@@ -252,7 +252,7 @@ export default function GroupDetailPage() {
         }
     };
 
-    const handleUpiPayment = useCallback((member: any) => {
+    const handleUpiPayment = useCallback((member: any, appType: 'generic' | 'paytm' = 'generic') => {
         const upiId = member.upi_id?.trim();
 
         if (!upiId) {
@@ -262,7 +262,10 @@ export default function GroupDetailPage() {
 
         const name = encodeURIComponent(member.name || "Promoter");
 
-        const upiLink = `upi://pay?pa=${upiId}&pn=${name}`;
+        const genericLink = `upi://pay?pa=${upiId}&pn=${name}`;
+        const upiLink = appType === 'paytm'
+            ? `paytmmp://pay?pa=${upiId}&pn=${name}`
+            : genericLink;
 
         console.log("Generated UPI Link:", upiLink);
 
@@ -274,6 +277,27 @@ export default function GroupDetailPage() {
         }
 
         window.location.href = upiLink;
+
+        if (appType === 'paytm') {
+            const timeout = setTimeout(() => {
+                // If page is still visible, it means the app probably didn't open
+                if (!document.hidden) {
+                    window.location.href = genericLink;
+                }
+            }, 2500);
+
+            const handleVisibilityChange = () => {
+                if (document.hidden) {
+                    clearTimeout(timeout);
+                }
+            };
+            document.addEventListener("visibilitychange", handleVisibilityChange);
+
+            // Cleanup listener
+            setTimeout(() => {
+                document.removeEventListener("visibilitychange", handleVisibilityChange);
+            }, 3000);
+        }
     }, []);
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -1013,16 +1037,22 @@ export default function GroupDetailPage() {
                                                                         </DialogHeader>
                                                                         <div className="flex flex-col gap-3 mt-4">
                                                                             <Button
-                                                                                onClick={() => handleUpiPayment(member)}
+                                                                                onClick={() => handleUpiPayment(member, 'generic')}
                                                                                 className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
                                                                             >
                                                                                 Pay via PhonePe
                                                                             </Button>
                                                                             <Button
-                                                                                onClick={() => handleUpiPayment(member)}
+                                                                                onClick={() => handleUpiPayment(member, 'generic')}
                                                                                 className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
                                                                             >
                                                                                 Pay via GPay
+                                                                            </Button>
+                                                                            <Button
+                                                                                onClick={() => handleUpiPayment(member, 'paytm')}
+                                                                                className="w-full h-12 bg-[#00baf2] hover:bg-[#009fd0] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                                                            >
+                                                                                Pay via Paytm
                                                                             </Button>
                                                                             <p className="text-xs text-center text-muted-foreground mt-3 px-2 leading-relaxed">
                                                                                 Complete payment on your device, then manually check the box to mark as paid.
