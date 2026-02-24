@@ -585,7 +585,7 @@ export default function GroupDetailPage() {
     const isSelectionComplete = selectedYear !== "" && selectedMonth !== "";
 
     return (
-        <main className="min-h-screen bg-background text-foreground pb-20">
+        <main className="min-h-screen bg-background text-foreground pb-20 overflow-x-hidden">
             {/* ── Header Bar ─────────────────────────────────────────────────── */}
             <div
                 className="sticky top-0 z-10 w-full border-b border-border bg-background/95"
