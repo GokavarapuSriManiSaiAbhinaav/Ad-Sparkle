@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
-import { AlertCircle, Loader2, LogOut, Users, ChevronRight, Sparkles } from "lucide-react";
+import { AlertCircle, Users, ChevronRight, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 
@@ -62,7 +62,7 @@ export default function DashboardPage() {
 
             {/* ── Top header bar ─────────────────────────────────────────────── */}
             <div className="w-full bg-background/95 border-b border-border sticky top-0 z-20">
-                <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-3">
+                <div className="max-w-6xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div
                             className="flex h-10 w-10 items-center justify-center rounded-xl shadow-md border border-border/50"
@@ -89,7 +89,7 @@ export default function DashboardPage() {
             </div>
 
             {/* ── Content ─────────────────────────────────────────────────────── */}
-            <div className="max-w-5xl mx-auto px-6 py-10 relative z-10">
+            <div className="max-w-6xl mx-auto px-6 md:px-8 py-10 relative z-10">
                 {/* Section heading */}
                 <div className="mb-10 pl-2">
                     <h2 className="text-2xl font-bold tracking-tight text-foreground">Your Groups</h2>
@@ -100,7 +100,7 @@ export default function DashboardPage() {
 
                 {/* ── Loading state ────────────────────────────────────────────── */}
                 {loading && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
                         {[...Array(6)].map((_, i) => (
                             <SkeletonCard key={i} />
                         ))}
@@ -149,7 +149,7 @@ export default function DashboardPage() {
                 <AnimatePresence>
                     {!loading && !error && groups.length > 0 && (
                         <motion.div
-                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8"
                             initial="hidden"
                             animate="visible"
                             variants={{
@@ -170,12 +170,13 @@ export default function DashboardPage() {
                                         key={group.id}
                                         variants={{
                                             hidden: { opacity: 0, scale: 0.98, y: 10 },
-                                            visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
+                                            visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } },
                                         }}
                                         onClick={() => router.push(`/dashboard/${group.id}`)}
-                                        className="cursor-pointer group block"
+                                        onMouseEnter={() => router.prefetch(`/dashboard/${group.id}`)}
+                                        className="cursor-pointer group block h-full"
                                     >
-                                        <div className="bg-card rounded-2xl shadow-sm md:hover:shadow-md transition-colors border border-border h-full flex flex-col overflow-hidden relative">
+                                        <div className="bg-card rounded-2xl shadow-sm hover:-translate-y-1 hover:shadow-md transition-all duration-300 border border-border h-full flex flex-col overflow-hidden relative">
                                             {/* Top accent line */}
                                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] to-[#4C1D95] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -188,7 +189,7 @@ export default function DashboardPage() {
 
                                                 {/* Text */}
                                                 <div className="flex-1 min-w-0 pt-1">
-                                                    <h3 className="text-lg font-semibold text-foreground line-clamp-2 leading-snug">
+                                                    <h3 className="text-lg md:text-xl font-bold text-foreground line-clamp-2 md:line-clamp-none leading-snug break-words">
                                                         {group.name}
                                                     </h3>
                                                     {group.description && (

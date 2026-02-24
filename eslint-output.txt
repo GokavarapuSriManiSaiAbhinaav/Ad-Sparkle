@@ -1,0 +1,60 @@
+﻿
+D:\ad-sparkle-admin\app\dashboard\[groupId]\page.tsx
+   38:5   warning  'LogOut' is defined but never used        @typescript-eslint/no-unused-vars
+   60:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   81:20  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  131:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  145:56  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  164:27  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  217:24  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  235:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  264:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  270:51  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  361:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  368:48  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  400:35  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  431:23  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  497:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  528:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\ad-sparkle-admin\app\dashboard\page.tsx
+  7:23  warning  'Loader2' is defined but never used  @typescript-eslint/no-unused-vars
+  7:32  warning  'LogOut' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\ad-sparkle-admin\app\login\page.tsx
+  63:25  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\ad-sparkle-admin\app\page.tsx
+  23:5  error  Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+D:\ad-sparkle-admin\app\page.tsx:23:5
+  21 |
+  22 |   useEffect(() => {
+> 23 |     setIsMounted(true);
+     |     ^^^^^^^^^^^^ Avoid calling setState() directly within an effect
+  24 |   }, []);
+  25 |
+  26 |   if (!isMounted) return null; // Prevent hydration errors with framer-motion  react-hooks/set-state-in-effect
+
+D:\ad-sparkle-admin\check_error.js
+  1:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+D:\ad-sparkle-admin\fix-colors.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+D:\ad-sparkle-admin\utils\generateReport.ts
+   69:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 28 problems (25 errors, 3 warnings)
+

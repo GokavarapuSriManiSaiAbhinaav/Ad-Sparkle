@@ -1,0 +1,8 @@
+﻿Unused devDependencies
+* @tailwindcss/postcss
+* @types/node
+* shadcn
+* tailwindcss
+* tw-animate-css
+Missing dependencies
+* dotenv: .\check_error.js

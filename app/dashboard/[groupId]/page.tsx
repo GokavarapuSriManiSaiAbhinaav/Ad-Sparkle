@@ -35,7 +35,6 @@ import {
     Users,
     CalendarDays,
     Filter,
-    LogOut,
     CheckCircle2,
     Copy,
 } from "lucide-react";
@@ -142,6 +141,8 @@ export default function GroupDetailPage() {
     const [loadingPayments, setLoadingPayments] = useState<Set<string>>(new Set());
 
     const [qrModalData, setQrModalData] = useState<{ upiLink: string; upiId: string; memberName: string } | null>(null);
+    const [paymentMember, setPaymentMember] = useState<any>(null);
+    const [paymentModalStep, setPaymentModalStep] = useState<'initial' | 'apps'>('initial');
 
     // 1. Fetch Group details on initial load
     useEffect(() => {
@@ -280,8 +281,6 @@ export default function GroupDetailPage() {
             ? `paytmmp://pay?pa=${upiId}&pn=${name}&cu=INR`
             : genericLink;
 
-        console.log("Generated UPI Link:", upiLink);
-
         // Native devices handler validation check
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
@@ -290,35 +289,6 @@ export default function GroupDetailPage() {
         }
 
         window.location.href = upiLink;
-
-        // Smart fallback to QR Code after 3 seconds
-        const qrTimeoutId = setTimeout(() => {
-            if (!document.hidden) {
-                setQrModalData({ upiLink: genericLink, upiId, memberName: member.name || "Promoter" });
-            }
-        }, 3000);
-
-        let paytmTimeoutId: NodeJS.Timeout | undefined;
-        if (appType === 'paytm') {
-            paytmTimeoutId = setTimeout(() => {
-                if (!document.hidden) {
-                    window.location.href = genericLink;
-                }
-            }, 1000);
-        }
-
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                clearTimeout(qrTimeoutId);
-                if (paytmTimeoutId) clearTimeout(paytmTimeoutId);
-            }
-        };
-        document.addEventListener("visibilitychange", handleVisibilityChange);
-
-        // Cleanup listener
-        setTimeout(() => {
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-        }, 3500);
     }, []);
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -533,27 +503,29 @@ export default function GroupDetailPage() {
     const handleDeleteMember = async (memberId: string) => {
         setIsDeleting(true);
         try {
-            // First, delete any dependent monthly records to prevent 409 Conflict FK errors
-            const { error: mError } = await supabase
-                .from("monthly_records")
-                .delete()
-                .eq("promoter_id", memberId);
+            if (!selectedYear || !selectedMonth) {
+                toast.error("Please select a year and month.");
+                return;
+            }
 
-            if (mError) throw mError;
+            const monthStr = selectedMonth.toString().padStart(2, '0');
+            const leaveDate = `${selectedYear}-${monthStr}-01`;
 
-            // Then delete the actual promoter
+            // Perform a "soft delete" to maintain historical monthly records
+            // Instead of deleting the record, we set a leave_date.
+            // Our activePromoters filter handles hiding members after their leave_date.
             const { error: pError } = await supabase
                 .from("promoters")
-                .delete()
+                .update({ leave_date: leaveDate })
                 .eq("id", memberId);
 
             if (pError) throw pError;
 
-            toast.success("Member deleted");
+            toast.success("Member removed from this month onwards");
             setEditingMember(null);
             handleLoadMembers();
         } catch (error: any) {
-            toast.error(error.message || "Failed to delete member");
+            toast.error(error.message || "Failed to remove member");
         } finally {
             setIsDeleting(false);
         }
@@ -618,7 +590,7 @@ export default function GroupDetailPage() {
             <div
                 className="sticky top-0 z-10 w-full border-b border-border bg-background/95"
             >
-                <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
+                <div className="max-w-md md:max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
                         className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
@@ -626,7 +598,7 @@ export default function GroupDetailPage() {
                         <ArrowLeft className="h-4 w-4" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-base font-bold text-foreground leading-tight line-clamp-2">
+                        <h1 className="text-base md:text-xl font-bold text-foreground leading-tight line-clamp-2 md:line-clamp-none break-words">
                             {isFetchingGroup ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             ) : group ? (
@@ -649,10 +621,10 @@ export default function GroupDetailPage() {
                 </div>
             </div>
 
-            <div className="max-w-md mx-auto p-4 pt-6">
+            <div className="max-w-md md:max-w-6xl mx-auto p-4 md:p-8 pt-6">
                 {/* ── Selectors & Top Controls ─────────────────────────────────── */}
-                <div className="mb-6 space-y-4">
-                    <div className="grid grid-cols-2 gap-3">
+                <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
+                    <div className="grid grid-cols-2 gap-3 flex-1 w-full">
                         <Select value={selectedYear} onValueChange={setSelectedYear}>
                             <SelectTrigger className="rounded-xl h-11 bg-card">
                                 <SelectValue placeholder="Select Year" />
@@ -683,7 +655,7 @@ export default function GroupDetailPage() {
                     <Button
                         onClick={handleLoadMembers}
                         disabled={!isSelectionComplete || isFetchingMembers}
-                        className="w-full h-11 rounded-xl shadow-sm text-sm font-bold"
+                        className="w-full md:w-auto h-11 rounded-xl shadow-sm text-sm font-bold md:px-8"
                     >
                         {isFetchingMembers ? (
                             <>
@@ -885,7 +857,7 @@ export default function GroupDetailPage() {
 
                             {/* Card List */}
                             {mergedData.length > 0 && (
-                                <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
                                     <AnimatePresence>
                                         {mergedData.map((member, idx) => (
                                             <motion.div
@@ -895,21 +867,22 @@ export default function GroupDetailPage() {
                                                 exit={{ opacity: 0, scale: 0.98, y: -5 }}
                                                 transition={{ duration: 0.2 }}
                                                 layout
+                                                className="h-full"
                                             >
-                                                <Card className={`rounded-2xl border transition-colors duration-200 ${member.payment_completed
+                                                <Card className={`h-full rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${member.payment_completed
                                                     ? "bg-green-500/10 border-green-500/30 border-l-4 border-l-green-500"
                                                     : "bg-card border-border p-0"
                                                     }`}>
-                                                    <div className="p-4 flex flex-col gap-3.5">
+                                                    <div className="p-4 flex flex-col h-full gap-3.5">
                                                         {/* Top Row: Info */}
-                                                        <div className="flex justify-between items-start gap-3">
+                                                        <div className="flex justify-between items-start gap-3 flex-1">
                                                             <div className="flex items-start gap-3 flex-1 min-w-0">
                                                                 <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] text-xs font-semibold text-foreground mt-0.5">
                                                                     {idx + 1}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-start gap-2">
-                                                                        <h3 className="text-sm font-bold line-clamp-2 leading-tight dark:text-foreground text-gray-900">
+                                                                    <div className="flex items-start gap-2 max-w-full">
+                                                                        <h3 className="text-sm md:text-base font-bold line-clamp-2 md:line-clamp-none leading-tight dark:text-foreground text-gray-900 break-words flex-1">
                                                                             {member.name}
                                                                         </h3>
                                                                         {member.payment_completed && (
@@ -1039,48 +1012,20 @@ export default function GroupDetailPage() {
                                                             </div>
 
                                                             <div className="flex items-center gap-3">
-                                                                <Dialog>
-                                                                    <DialogTrigger asChild>
-                                                                        <Button
-                                                                            size="sm"
-                                                                            variant={member.payment_completed ? "secondary" : "default"}
-                                                                            className={`h-8 text-xs font-medium rounded-lg px-4 transition-colors ${!member.payment_completed
-                                                                                ? "text-white bg-[#7C3AED] hover:bg-[#6D28D9] border-none"
-                                                                                : ""
-                                                                                }`}
-                                                                        >
-                                                                            {member.payment_completed ? "Paid" : "Pay"}
-                                                                        </Button>
-                                                                    </DialogTrigger>
-                                                                    <DialogContent className="max-w-[320px] rounded-3xl p-6 border-border shadow-2xl" showCloseButton={false}>
-                                                                        <DialogHeader>
-                                                                            <DialogTitle className="text-center text-xl font-bold tracking-tight">Pay {member.name}</DialogTitle>
-                                                                        </DialogHeader>
-                                                                        <div className="flex flex-col gap-3 mt-4">
-                                                                            <Button
-                                                                                onClick={() => handleUpiPayment(member, 'generic')}
-                                                                                className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
-                                                                            >
-                                                                                Pay via PhonePe
-                                                                            </Button>
-                                                                            <Button
-                                                                                onClick={() => handleUpiPayment(member, 'generic')}
-                                                                                className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
-                                                                            >
-                                                                                Pay via GPay
-                                                                            </Button>
-                                                                            <Button
-                                                                                onClick={() => handleUpiPayment(member, 'paytm')}
-                                                                                className="w-full h-12 bg-[#00baf2] hover:bg-[#009fd0] text-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
-                                                                            >
-                                                                                Pay via Paytm
-                                                                            </Button>
-                                                                            <p className="text-xs text-center text-muted-foreground mt-3 px-2 leading-relaxed">
-                                                                                Complete payment on your device, then manually check the box to mark as paid.
-                                                                            </p>
-                                                                        </div>
-                                                                    </DialogContent>
-                                                                </Dialog>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant={member.payment_completed ? "secondary" : "default"}
+                                                                    onClick={() => {
+                                                                        setPaymentMember(member);
+                                                                        setPaymentModalStep('initial');
+                                                                    }}
+                                                                    className={`h-8 text-xs font-medium rounded-lg px-4 transition-colors ${!member.payment_completed
+                                                                        ? "text-white bg-[#7C3AED] hover:bg-[#6D28D9] border-none"
+                                                                        : ""
+                                                                        }`}
+                                                                >
+                                                                    {member.payment_completed ? "Paid" : "Pay"}
+                                                                </Button>
 
                                                                 <div className="flex items-center justify-center bg-background border-border p-1.5 rounded-md border border-border shadow-sm transition-colors hover:bg-muted/50">
                                                                     <Checkbox
@@ -1104,6 +1049,79 @@ export default function GroupDetailPage() {
                 </AnimatePresence>
             </div>
 
+            {/* ── Payment Choice Modal ─────────────────────────────────────── */}
+            <Dialog open={!!paymentMember} onOpenChange={(open) => {
+                if (!open) {
+                    setPaymentMember(null);
+                    setPaymentModalStep('initial');
+                }
+            }}>
+                <DialogContent className="max-w-[320px] rounded-3xl p-6 border-border shadow-2xl" showCloseButton={false}>
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-xl font-bold tracking-tight">Complete Payment</DialogTitle>
+                    </DialogHeader>
+                    {paymentModalStep === 'initial' ? (
+                        <div className="flex flex-col gap-3 mt-4">
+                            <Button
+                                onClick={() => setPaymentModalStep('apps')}
+                                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                            >
+                                Via UPI
+                            </Button>
+                            <div className="relative flex items-center py-2">
+                                <div className="flex-grow border-t border-border"></div>
+                                <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs font-semibold uppercase tracking-wider">OR</span>
+                                <div className="flex-grow border-t border-border"></div>
+                            </div>
+                            <Button
+                                onClick={() => {
+                                    const upiId = paymentMember?.upi_id?.trim();
+                                    if (upiId) {
+                                        const name = encodeURIComponent(paymentMember.name || "Promoter");
+                                        const genericLink = `upi://pay?pa=${upiId}&pn=${name}&cu=INR`;
+                                        setQrModalData({ upiLink: genericLink, upiId: upiId, memberName: paymentMember.name || "Promoter" });
+                                        setPaymentMember(null);
+                                        setPaymentModalStep('initial');
+                                    } else {
+                                        toast.error("UPI ID missing.");
+                                    }
+                                }}
+                                className="w-full h-12 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                            >
+                                Scan QR
+                            </Button>
+                            <Button variant="ghost" className="mt-1 w-full text-xs text-muted-foreground" onClick={() => {
+                                setPaymentMember(null);
+                                setPaymentModalStep('initial');
+                            }}>
+                                Cancel
+                            </Button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col gap-3 mt-4">
+                            <Button
+                                onClick={() => handleUpiPayment(paymentMember, 'generic')}
+                                className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                            >
+                                Pay via PhonePe
+                            </Button>
+                            <Button
+                                onClick={() => handleUpiPayment(paymentMember, 'generic')}
+                                className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                            >
+                                Pay via GPay
+                            </Button>
+                            <p className="text-xs text-center text-muted-foreground mt-3 px-2 leading-relaxed">
+                                Complete payment on your device, then manually check the box to mark as paid.
+                            </p>
+                            <Button variant="ghost" className="mt-1 w-full text-xs text-muted-foreground" onClick={() => setPaymentModalStep('initial')}>
+                                Back
+                            </Button>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
             {/* ── QR Code Fallback Modal ─────────────────────────────────────── */}
             <Dialog open={!!qrModalData} onOpenChange={(open) => {
                 if (!open) setQrModalData(null);
@@ -1113,7 +1131,7 @@ export default function GroupDetailPage() {
                         <DialogTitle className="text-center text-xl font-bold tracking-tight">Scan to Pay</DialogTitle>
                     </DialogHeader>
                     <p className="text-sm text-center text-muted-foreground mt-1 mb-4 leading-relaxed">
-                        If app redirection fails, scan this QR code
+                        Scan this QR using any UPI app from your mobile.
                     </p>
                     <div className="bg-white p-4 rounded-2xl mx-auto w-max mb-5 shadow-sm border border-border">
                         <QRCode value={qrModalData?.upiLink || ""} size={200} />
