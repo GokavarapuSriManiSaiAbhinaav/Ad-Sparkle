@@ -595,7 +595,7 @@ export default function GroupDetailPage() {
         <main className="min-h-screen bg-background text-foreground pb-20">
             {/* ── Header Bar ─────────────────────────────────────────────────── */}
             <div
-                className="sticky top-0 z-10 w-full border-b border-border shadow-sm bg-background/80 backdrop-blur-md"
+                className="sticky top-0 z-10 w-full border-b border-border bg-background/95"
             >
                 <div className="max-w-md mx-auto px-4 py-4 flex items-center gap-3">
                     <button
@@ -605,7 +605,7 @@ export default function GroupDetailPage() {
                         <ArrowLeft className="h-4 w-4" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-base font-bold text-foreground leading-tight truncate">
+                        <h1 className="text-base font-bold text-foreground leading-tight line-clamp-2">
                             {isFetchingGroup ? (
                                 <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                             ) : group ? (
@@ -869,15 +869,15 @@ export default function GroupDetailPage() {
                                         {mergedData.map((member, idx) => (
                                             <motion.div
                                                 key={member.id}
-                                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                initial={{ opacity: 0, scale: 0.98, y: 5 }}
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
-                                                exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                                                exit={{ opacity: 0, scale: 0.98, y: -5 }}
                                                 transition={{ duration: 0.2 }}
                                                 layout
                                             >
-                                                <Card className={`rounded-2xl border shadow-md hover:shadow-lg hover:shadow-primary/20 hover:-translate-y-1 overflow-hidden transition-all duration-300 ${member.payment_completed
-                                                    ? "bg-green-500/5 border-green-500/30 border-l-4 border-l-green-500 shadow-[0_0_15px_rgba(34,197,94,0.1)]"
-                                                    : "bg-card border-border p-0 hover:border-primary/30"
+                                                <Card className={`rounded-2xl border transition-colors duration-200 ${member.payment_completed
+                                                    ? "bg-green-500/10 border-green-500/30 border-l-4 border-l-green-500"
+                                                    : "bg-card border-border p-0"
                                                     }`}>
                                                     <div className="p-4 flex flex-col gap-3.5">
                                                         {/* Top Row: Info */}
@@ -887,12 +887,12 @@ export default function GroupDetailPage() {
                                                                     {idx + 1}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
-                                                                    <div className="flex items-center gap-2">
-                                                                        <h3 className="text-sm font-bold truncate dark:text-foreground text-gray-900">
+                                                                    <div className="flex items-start gap-2">
+                                                                        <h3 className="text-sm font-bold line-clamp-2 leading-tight dark:text-foreground text-gray-900">
                                                                             {member.name}
                                                                         </h3>
                                                                         {member.payment_completed && (
-                                                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0">
+                                                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 mt-0.5">
                                                                                 <CheckCircle2 className="h-2.5 w-2.5" />
                                                                                 Paid
                                                                             </span>
@@ -1023,8 +1023,8 @@ export default function GroupDetailPage() {
                                                                         <Button
                                                                             size="sm"
                                                                             variant={member.payment_completed ? "secondary" : "default"}
-                                                                            className={`h-8 text-xs font-medium rounded-lg px-4 shadow-sm transition-all ${!member.payment_completed
-                                                                                ? "text-foreground bg-gradient-to-r from-[#7C3AED] to-[#5B21B6] hover:from-[#6D28D9] hover:to-[#4C1D95] border-none shadow-[0_0_15px_rgba(124,58,237,0.3)] hover:shadow-[0_0_20px_rgba(124,58,237,0.5)]"
+                                                                            className={`h-8 text-xs font-medium rounded-lg px-4 transition-colors ${!member.payment_completed
+                                                                                ? "text-white bg-[#7C3AED] hover:bg-[#6D28D9] border-none"
                                                                                 : ""
                                                                                 }`}
                                                                         >

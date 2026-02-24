@@ -57,11 +57,11 @@ export default function DashboardPage() {
 
     return (
         <main className="min-h-screen bg-background text-foreground relative overflow-hidden font-sans selection:bg-[#7C3AED]/30">
-            {/* Subtle radial glow behind content */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none -z-10" />
+            {/* Subtle radial glow behind content - desktop only to improve mobile repaints */}
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-[#7C3AED]/10 rounded-full blur-[120px] pointer-events-none -z-10 hidden md:block" />
 
             {/* ── Top header bar ─────────────────────────────────────────────── */}
-            <div className="w-full bg-background/80 backdrop-blur-md border-b border-border shadow-sm sticky top-0 z-20">
+            <div className="w-full bg-background/95 border-b border-border sticky top-0 z-20">
                 <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                         <div
@@ -169,13 +169,13 @@ export default function DashboardPage() {
                                     <motion.div
                                         key={group.id}
                                         variants={{
-                                            hidden: { opacity: 0, scale: 0.95, y: 20 },
-                                            visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+                                            hidden: { opacity: 0, scale: 0.98, y: 10 },
+                                            visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } },
                                         }}
                                         onClick={() => router.push(`/dashboard/${group.id}`)}
                                         className="cursor-pointer group block"
                                     >
-                                        <div className="bg-card rounded-2xl shadow-lg hover:shadow-xl hover:shadow-primary/20 hover:-translate-y-1 transition-all duration-300 border border-border hover:border-primary/30 h-full flex flex-col overflow-hidden relative">
+                                        <div className="bg-card rounded-2xl shadow-sm md:hover:shadow-md transition-colors border border-border h-full flex flex-col overflow-hidden relative">
                                             {/* Top accent line */}
                                             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-[#7C3AED] to-[#4C1D95] opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
@@ -188,11 +188,11 @@ export default function DashboardPage() {
 
                                                 {/* Text */}
                                                 <div className="flex-1 min-w-0 pt-1">
-                                                    <h3 className="text-lg font-semibold text-foreground truncate transition-colors drop-shadow-sm">
+                                                    <h3 className="text-lg font-semibold text-foreground line-clamp-2 leading-snug">
                                                         {group.name}
                                                     </h3>
                                                     {group.description && (
-                                                        <p className="text-sm font-medium text-muted-foreground mt-1.5 line-clamp-2 leading-relaxed">
+                                                        <p className="text-sm font-medium text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
                                                             {group.description}
                                                         </p>
                                                     )}
