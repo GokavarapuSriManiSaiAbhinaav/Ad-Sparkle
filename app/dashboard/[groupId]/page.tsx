@@ -37,10 +37,21 @@ import {
     Filter,
     LogOut,
     CheckCircle2,
+    Copy,
 } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { ProfileDropdown } from "@/components/profile-dropdown";
 import { generatePaymentReport } from "@/utils/generateReport";
+import dynamic from "next/dynamic";
+
+const QRCode = dynamic(() => import("react-qr-code"), {
+    ssr: false,
+    loading: () => (
+        <div className="h-[200px] w-[200px] flex items-center justify-center bg-muted/20 animate-pulse rounded-2xl border border-border">
+            <Loader2 className="animate-spin text-muted-foreground h-6 w-6" />
+        </div>
+    ),
+});
 
 type Group = {
     id: string;
@@ -129,6 +140,8 @@ export default function GroupDetailPage() {
     const [daysFilter, setDaysFilter] = useState("all");
     const [customDaysFilter, setCustomDaysFilter] = useState("");
     const [loadingPayments, setLoadingPayments] = useState<Set<string>>(new Set());
+
+    const [qrModalData, setQrModalData] = useState<{ upiLink: string; upiId: string; memberName: string } | null>(null);
 
     // 1. Fetch Group details on initial load
     useEffect(() => {
@@ -262,9 +275,9 @@ export default function GroupDetailPage() {
 
         const name = encodeURIComponent(member.name || "Promoter");
 
-        const genericLink = `upi://pay?pa=${upiId}&pn=${name}`;
+        const genericLink = `upi://pay?pa=${upiId}&pn=${name}&cu=INR`;
         const upiLink = appType === 'paytm'
-            ? `paytmmp://pay?pa=${upiId}&pn=${name}`
+            ? `paytmmp://pay?pa=${upiId}&pn=${name}&cu=INR`
             : genericLink;
 
         console.log("Generated UPI Link:", upiLink);
@@ -278,26 +291,34 @@ export default function GroupDetailPage() {
 
         window.location.href = upiLink;
 
+        // Smart fallback to QR Code after 3 seconds
+        const qrTimeoutId = setTimeout(() => {
+            if (!document.hidden) {
+                setQrModalData({ upiLink: genericLink, upiId, memberName: member.name || "Promoter" });
+            }
+        }, 3000);
+
+        let paytmTimeoutId: NodeJS.Timeout | undefined;
         if (appType === 'paytm') {
-            const timeout = setTimeout(() => {
-                // If page is still visible, it means the app probably didn't open
+            paytmTimeoutId = setTimeout(() => {
                 if (!document.hidden) {
                     window.location.href = genericLink;
                 }
-            }, 2500);
-
-            const handleVisibilityChange = () => {
-                if (document.hidden) {
-                    clearTimeout(timeout);
-                }
-            };
-            document.addEventListener("visibilitychange", handleVisibilityChange);
-
-            // Cleanup listener
-            setTimeout(() => {
-                document.removeEventListener("visibilitychange", handleVisibilityChange);
-            }, 3000);
+            }, 1000);
         }
+
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                clearTimeout(qrTimeoutId);
+                if (paytmTimeoutId) clearTimeout(paytmTimeoutId);
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        // Cleanup listener
+        setTimeout(() => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        }, 3500);
     }, []);
 
     const handleAddMember = async (e: React.FormEvent) => {
@@ -1082,6 +1103,40 @@ export default function GroupDetailPage() {
                     )}
                 </AnimatePresence>
             </div>
+
+            {/* ── QR Code Fallback Modal ─────────────────────────────────────── */}
+            <Dialog open={!!qrModalData} onOpenChange={(open) => {
+                if (!open) setQrModalData(null);
+            }}>
+                <DialogContent className="max-w-[340px] rounded-3xl p-6 border-border shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-center text-xl font-bold tracking-tight">Scan to Pay</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-center text-muted-foreground mt-1 mb-4 leading-relaxed">
+                        If app redirection fails, scan this QR code
+                    </p>
+                    <div className="bg-white p-4 rounded-2xl mx-auto w-max mb-5 shadow-sm border border-border">
+                        <QRCode value={qrModalData?.upiLink || ""} size={200} />
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="bg-muted/50 px-4 py-2 rounded-xl border border-border w-full text-center">
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">UPI ID</p>
+                            <p className="font-medium text-sm truncate">{qrModalData?.upiId}</p>
+                        </div>
+                        <Button
+                            variant="secondary"
+                            className="w-full rounded-xl h-11 shadow-sm font-semibold gap-2"
+                            onClick={() => {
+                                navigator.clipboard.writeText(qrModalData?.upiId || "");
+                                toast.success("UPI ID copied to clipboard!");
+                            }}
+                        >
+                            <Copy className="h-4 w-4" />
+                            Copy UPI ID
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }
