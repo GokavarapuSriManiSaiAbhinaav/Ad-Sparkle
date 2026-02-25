@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 import { supabase } from "@/lib/supabase";
 import { AlertCircle, Users, ChevronRight, Sparkles } from "lucide-react";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -64,13 +65,8 @@ export default function DashboardPage() {
             <div className="w-full bg-background/95 border-b border-border sticky top-0 z-20">
                 <div className="max-w-6xl mx-auto px-6 md:px-8 py-4 flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
-                        <div
-                            className="flex h-10 w-10 items-center justify-center rounded-xl shadow-md border border-border/50"
-                            style={{
-                                background: "linear-gradient(135deg, #7C3AED 0%, #4C1D95 100%)",
-                            }}
-                        >
-                            <Sparkles className="h-5 w-5 text-white" />
+                        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full overflow-hidden border border-border shadow-sm bg-background">
+                            <Image src="/ad-sparkle-image.png" alt="AdSparkle Logo" width={40} height={40} className="object-cover w-full h-full" priority />
                         </div>
                         <div>
                             <h1 className="text-lg font-bold text-foreground leading-tight tracking-tight">
