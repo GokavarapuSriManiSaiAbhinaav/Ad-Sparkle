@@ -1,0 +1,42 @@
+﻿
+D:\ad-sparkle-admin\app\dashboard\[groupId]\page.tsx
+   59:20  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   70:20  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+   80:20  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  144:56  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  158:56  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  184:27  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  243:24  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  261:23  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  290:23  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  296:51  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  387:25  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  394:48  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  426:35  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  457:23  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  523:25  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  554:25  error    Unexpected any. Specify a different type                  @typescript-eslint/no-explicit-any
+  615:11  warning  'isSelectionComplete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\ad-sparkle-admin\app\login\page.tsx
+  18:10  warning  'Loader2' is defined but never used       @typescript-eslint/no-unused-vars
+  63:25  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\ad-sparkle-admin\app\page.tsx
+  243:86  error  `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`  react/no-unescaped-entities
+
+D:\ad-sparkle-admin\check_error.js
+  1:1   error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:26  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+D:\ad-sparkle-admin\fix-colors.js
+  1:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+  2:14  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+D:\ad-sparkle-admin\utils\generateReport.ts
+   69:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   96:26  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  112:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+Γ£û 27 problems (25 errors, 2 warnings)
+

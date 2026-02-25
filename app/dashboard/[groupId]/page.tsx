@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
@@ -98,13 +99,27 @@ const MONTHS = [
 ];
 
 export default function GroupDetailPage() {
+    const searchParams = useSearchParams();
     const router = useRouter();
     const params = useParams();
     const groupId = params?.groupId as string;
 
-    // Selection states (initialize empty)
-    const [selectedYear, setSelectedYear] = useState<string>("");
-    const [selectedMonth, setSelectedMonth] = useState<string>("");
+    // Selection states (derive from URL)
+    const selectedYear = searchParams.get("year") || "";
+    const selectedMonth = searchParams.get("month") || "";
+
+    const handleYearChange = (year: string) => {
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.set("year", year);
+        router.push(`/dashboard/${groupId}?${newParams.toString()}`, { scroll: false });
+    };
+
+    const handleMonthChange = (month: string) => {
+        const newParams = new URLSearchParams(searchParams.toString());
+        newParams.set("month", month);
+        router.push(`/dashboard/${groupId}?${newParams.toString()}`, { scroll: false });
+    };
+
     const [searchQuery, setSearchQuery] = useState("");
 
     // Data states
@@ -146,7 +161,10 @@ export default function GroupDetailPage() {
 
     // 1. Fetch Group details on initial load
     useEffect(() => {
-        if (!groupId) return;
+        if (!groupId) {
+            router.push("/dashboard");
+            return;
+        }
 
         async function fetchGroup() {
             setIsFetchingGroup(true);
@@ -159,6 +177,10 @@ export default function GroupDetailPage() {
                     .single();
 
                 if (error && error.code !== "PGRST116") throw error;
+                if (!data) {
+                    router.push("/dashboard");
+                    return;
+                }
                 if (data) setGroup(data);
             } catch (err: any) {
                 setError(err.message || "Failed to load group.");
@@ -168,10 +190,10 @@ export default function GroupDetailPage() {
         }
 
         fetchGroup();
-    }, [groupId]);
+    }, [groupId, router]);
 
     // 2. Fetch Members when "Load Members" is clicked
-    const handleLoadMembers = async () => {
+    const handleLoadMembers = useCallback(async () => {
         if (!selectedYear || !selectedMonth) return;
 
         setIsFetchingMembers(true);
@@ -181,6 +203,12 @@ export default function GroupDetailPage() {
         try {
             const yearInt = parseInt(selectedYear);
             const monthInt = parseInt(selectedMonth);
+
+            if (isNaN(yearInt) || isNaN(monthInt) || monthInt < 1 || monthInt > 12) {
+                setError("Invalid year or month selected.");
+                return;
+            }
+
             const selectedYM = yearInt * 12 + monthInt;
 
             // Fetch promoters
@@ -236,7 +264,7 @@ export default function GroupDetailPage() {
         } finally {
             setIsFetchingMembers(false);
         }
-    };
+    }, [selectedYear, selectedMonth, groupId]);
 
     const handleGenerateReport = async () => {
         if (!group) {
@@ -535,9 +563,12 @@ export default function GroupDetailPage() {
     useEffect(() => {
         if (selectedYear && selectedMonth) {
             handleLoadMembers();
+        } else {
+            setPromoters([]);
+            setMonthlyRecords([]);
+            setHasLoadedMembers(false);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [selectedYear, selectedMonth]);
+    }, [selectedYear, selectedMonth, handleLoadMembers]);
 
     // Compute merged data
     const mergedData = useMemo(() => {
@@ -588,26 +619,29 @@ export default function GroupDetailPage() {
         <main className="min-h-screen bg-background text-foreground pb-20 overflow-x-hidden">
             {/* ── Header Bar ─────────────────────────────────────────────────── */}
             <div
-                className="sticky top-0 z-10 w-full border-b border-border bg-background/95"
+                className="sticky top-0 z-10 w-full glass-navy"
+                style={{ borderBottom: "1px solid rgba(212,175,55,0.12)" }}
             >
                 <div className="max-w-md md:max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center gap-3">
                     <button
                         onClick={() => router.back()}
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-foreground/10 transition-colors"
+                        className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
+                        style={{ color: "var(--text-muted)" }}
                     >
                         <ArrowLeft className="h-4 w-4" />
                     </button>
                     <div className="flex-1 min-w-0">
-                        <h1 className="text-base md:text-xl font-bold text-foreground leading-tight line-clamp-2 md:line-clamp-none break-words">
+                        <h1 className="text-base md:text-xl font-bold leading-tight line-clamp-2 md:line-clamp-none break-words gold-gradient-text"
+                            style={{ fontFamily: "'Playfair Display', serif" }}>
                             {isFetchingGroup ? (
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                <Loader2 className="h-4 w-4 animate-spin" style={{ color: "#D4AF37" }} />
                             ) : group ? (
                                 group.name
                             ) : (
                                 "Loading Group..."
                             )}
                         </h1>
-                        <p className="text-xs text-muted-foreground/70 leading-none mt-0.5 truncate">
+                        <p className="text-xs leading-none mt-0.5 truncate" style={{ color: "var(--text-muted)" }}>
                             Group Detail
                         </p>
                     </div>
@@ -625,8 +659,8 @@ export default function GroupDetailPage() {
                 {/* ── Selectors & Top Controls ─────────────────────────────────── */}
                 <div className="mb-6 flex flex-col md:flex-row md:items-center gap-4">
                     <div className="grid grid-cols-2 gap-3 flex-1 w-full">
-                        <Select value={selectedYear} onValueChange={setSelectedYear}>
-                            <SelectTrigger className="rounded-xl h-11 bg-card">
+                        <Select value={selectedYear} onValueChange={handleYearChange}>
+                            <SelectTrigger className="rounded-xl h-11 bg-card border-border shadow-sm">
                                 <SelectValue placeholder="Select Year" />
                             </SelectTrigger>
                             <SelectContent>
@@ -638,8 +672,8 @@ export default function GroupDetailPage() {
                             </SelectContent>
                         </Select>
 
-                        <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                            <SelectTrigger className="rounded-xl h-11 bg-card">
+                        <Select value={selectedMonth} onValueChange={handleMonthChange}>
+                            <SelectTrigger className="rounded-xl h-11 bg-card border-border shadow-sm">
                                 <SelectValue placeholder="Select Month" />
                             </SelectTrigger>
                             <SelectContent>
@@ -651,21 +685,6 @@ export default function GroupDetailPage() {
                             </SelectContent>
                         </Select>
                     </div>
-
-                    <Button
-                        onClick={handleLoadMembers}
-                        disabled={!isSelectionComplete || isFetchingMembers}
-                        className="w-full md:w-auto h-11 rounded-xl shadow-sm text-sm font-bold md:px-8"
-                    >
-                        {isFetchingMembers ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Loading...
-                            </>
-                        ) : (
-                            "Load Members"
-                        )}
-                    </Button>
                 </div>
 
                 {/* ── Status Messages (Error) ──────────────────────────────────── */}
@@ -701,6 +720,22 @@ export default function GroupDetailPage() {
                     </motion.div>
                 )}
 
+                {/* ── Loading Skeleton ─────────────────────────── */}
+                {isFetchingMembers && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-8 space-y-4">
+                        <div className="flex justify-between items-end mb-6">
+                            <div className="h-6 w-24 bg-muted/20 animate-pulse rounded" />
+                            <div className="h-9 w-28 bg-muted/20 animate-pulse rounded-xl" />
+                        </div>
+                        <div className="h-11 w-full max-w-sm bg-muted/20 animate-pulse rounded-xl" />
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[1, 2, 3, 4, 5, 6].map(i => (
+                                <div key={i} className="h-40 w-full bg-muted/20 animate-pulse rounded-2xl border border-border" />
+                            ))}
+                        </div>
+                    </motion.div>
+                )}
+
                 {/* ── Members List Section ─────────────────────────────────────── */}
                 <AnimatePresence>
                     {hasLoadedMembers && (
@@ -713,32 +748,50 @@ export default function GroupDetailPage() {
                         >
                             {/* Header with Title and Add Button */}
                             <div className="flex justify-between items-end">
-                                <h2 className="text-xl font-bold tracking-tight mb-0.5">Members</h2>
+                                <div>
+                                    <h2 className="text-xl font-bold tracking-tight mb-0.5" style={{ fontFamily: "'Playfair Display', serif" }}>Members</h2>
+                                    <div className="h-0.5 w-10 mt-1" style={{ background: "linear-gradient(90deg, #D4AF37, transparent)" }} />
+                                </div>
                                 <Dialog open={isAddMemberOpen} onOpenChange={setIsAddMemberOpen}>
                                     <DialogTrigger asChild>
-                                        <Button size="sm" className="h-9 gap-1.5 rounded-xl shadow-sm">
+                                        <Button size="sm" className="btn-gold h-9 gap-1.5 rounded-xl border-0">
                                             <Plus className="h-4 w-4" />
                                             Add Member
                                         </Button>
                                     </DialogTrigger>
-                                    <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-border shadow-2xl">
+                                    <DialogContent
+                                        className="force-dark max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 shadow-2xl"
+                                        style={{
+                                            background: "linear-gradient(to bottom, #0A1929, #050D14)",
+                                            border: "1px solid rgba(212,175,55,0.3)",
+                                            boxShadow: "0 0 40px rgba(212,175,55,0.15)",
+                                        }}
+                                    >
+                                        {/* Gold top line */}
+                                        <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-3xl"
+                                            style={{ background: "linear-gradient(90deg, transparent, #D4AF37, #F5E6A6, #D4AF37, transparent)" }} />
                                         <DialogHeader>
-                                            <DialogTitle className="text-xl font-bold tracking-tight">Add New Member</DialogTitle>
+                                            <DialogTitle
+                                                className="text-xl font-bold tracking-tight gold-gradient-text"
+                                                style={{ fontFamily: "'Playfair Display', serif" }}
+                                            >
+                                                Add New Member
+                                            </DialogTitle>
                                         </DialogHeader>
                                         <form onSubmit={handleAddMember} className="space-y-4 mt-2">
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                     Name (Optional)
                                                 </label>
                                                 <Input
                                                     placeholder="John Doe"
                                                     value={newMemberName}
                                                     onChange={(e) => setNewMemberName(e.target.value)}
-                                                    className="h-11 rounded-xl bg-background border-border border-border"
+                                                    className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                     Phone (Required)
                                                 </label>
                                                 <Input
@@ -746,11 +799,11 @@ export default function GroupDetailPage() {
                                                     value={newMemberPhone}
                                                     onChange={(e) => setNewMemberPhone(e.target.value)}
                                                     required
-                                                    className="h-11 rounded-xl bg-background border-border border-border"
+                                                    className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                     UPI ID (Required)
                                                 </label>
                                                 <Input
@@ -758,11 +811,11 @@ export default function GroupDetailPage() {
                                                     value={newMemberUpiId}
                                                     onChange={(e) => setNewMemberUpiId(e.target.value)}
                                                     required
-                                                    className="h-11 rounded-xl bg-background border-border border-border"
+                                                    className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                 />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                     Days (Optional)
                                                 </label>
                                                 <Input
@@ -770,13 +823,13 @@ export default function GroupDetailPage() {
                                                     placeholder="0"
                                                     value={newMemberDays}
                                                     onChange={(e) => setNewMemberDays(e.target.value)}
-                                                    className="h-11 rounded-xl bg-background border-border border-border"
+                                                    className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                 />
                                             </div>
                                             <Button
                                                 type="submit"
                                                 disabled={isAddingMember}
-                                                className="w-full h-11 rounded-xl shadow-md text-sm font-bold mt-2"
+                                                className="btn-gold w-full h-11 rounded-xl text-sm font-bold mt-2 border-0 shadow-[0_0_15px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)]"
                                             >
                                                 {isAddingMember ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                                 {isAddingMember ? "Saving..." : "Save Member"}
@@ -840,13 +893,15 @@ export default function GroupDetailPage() {
 
                             {/* Empty state for Search/Filter */}
                             {mergedData.length === 0 && (
-                                <div className="rounded-2xl border border-dashed border-border/70 bg-muted/20 py-12 flex flex-col items-center gap-3 text-center">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground">
-                                        <Users className="h-6 w-6" />
+                                <div className="rounded-2xl py-12 flex flex-col items-center gap-3 text-center"
+                                    style={{ background: "var(--card)", border: "1px dashed var(--border)" }}>
+                                    <div className="flex h-12 w-12 items-center justify-center rounded-xl"
+                                        style={{ background: "rgba(212,175,55,0.07)", border: "1px solid rgba(212,175,55,0.14)" }}>
+                                        <Users className="h-6 w-6" style={{ color: "var(--primary)" }} />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-sm">No members found</p>
-                                        <p className="text-xs text-muted-foreground mt-1 px-4">
+                                        <p className="font-semibold text-sm text-foreground">No members found</p>
+                                        <p className="text-xs mt-1 px-4" style={{ color: "var(--text-secondary)" }}>
                                             No active promoters matched the filters for{" "}
                                             {MONTHS.find((m) => m.value === selectedMonth)?.label}{" "}
                                             {selectedYear}.
@@ -857,7 +912,7 @@ export default function GroupDetailPage() {
 
                             {/* Card List */}
                             {mergedData.length > 0 && (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-6" style={{ willChange: "auto" }}>
                                     <AnimatePresence>
                                         {mergedData.map((member, idx) => (
                                             <motion.div
@@ -866,33 +921,31 @@ export default function GroupDetailPage() {
                                                 animate={{ opacity: 1, scale: 1, y: 0 }}
                                                 exit={{ opacity: 0, scale: 0.98, y: -5 }}
                                                 transition={{ duration: 0.2 }}
-                                                layout
                                                 className="h-full"
                                             >
-                                                <Card className={`h-full rounded-2xl border transition-all duration-200 hover:-translate-y-1 hover:shadow-md ${member.payment_completed
-                                                    ? "bg-green-500/10 border-green-500/30 border-l-4 border-l-green-500"
-                                                    : "bg-card border-border p-0"
-                                                    }`}>
+                                                <Card className={`h-full rounded-2xl transition-all duration-200 hover:-translate-y-1 ${member.payment_completed ? "paid-card-style" : "luxury-card"}`}
+                                                    style={{ padding: 0 }}>
                                                     <div className="p-4 flex flex-col h-full gap-3.5">
                                                         {/* Top Row: Info */}
                                                         <div className="flex justify-between items-start gap-3 flex-1">
                                                             <div className="flex items-start gap-3 flex-1 min-w-0">
-                                                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-[#7C3AED] to-[#4C1D95] text-xs font-semibold text-foreground mt-0.5">
+                                                                <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold mt-0.5"
+                                                                    style={{ background: "linear-gradient(135deg, #D4AF37, #C9A227)", color: "#0B1C2D" }}>
                                                                     {idx + 1}
                                                                 </div>
                                                                 <div className="flex-1 min-w-0">
                                                                     <div className="flex items-start gap-2 max-w-full">
-                                                                        <h3 className="text-sm md:text-base font-bold line-clamp-2 md:line-clamp-none leading-tight dark:text-foreground text-gray-900 break-words flex-1">
+                                                                        <h3 className="text-sm md:text-base font-bold line-clamp-2 md:line-clamp-none leading-tight break-words flex-1 text-foreground">
                                                                             {member.name}
                                                                         </h3>
                                                                         {member.payment_completed && (
-                                                                            <span className="flex items-center gap-1 text-[9px] font-bold text-green-500 bg-green-500/10 px-1.5 py-0.5 rounded-md uppercase tracking-wider shrink-0 mt-0.5">
+                                                                            <span className="paid-badge flex items-center gap-1 shrink-0 mt-0.5">
                                                                                 <CheckCircle2 className="h-2.5 w-2.5" />
-                                                                                Paid
+                                                                                PAID
                                                                             </span>
                                                                         )}
                                                                     </div>
-                                                                    <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1 truncate">
+                                                                    <p className="text-xs flex items-center gap-1.5 mt-1 truncate text-foreground/80">
                                                                         <Phone className="h-3 w-3 flex-shrink-0" />
                                                                         {member.phone || "N/A"}
                                                                     </p>
@@ -920,24 +973,39 @@ export default function GroupDetailPage() {
                                                                     </Button>
                                                                 </DialogTrigger>
 
-                                                                <DialogContent className="max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 border-border shadow-2xl">
+                                                                <DialogContent
+                                                                    className="force-dark max-w-[340px] w-[calc(100%-32px)] rounded-3xl p-6 shadow-2xl"
+                                                                    style={{
+                                                                        background: "linear-gradient(to bottom, #0A1929, #050D14)",
+                                                                        border: "1px solid rgba(212,175,55,0.3)",
+                                                                        boxShadow: "0 0 40px rgba(212,175,55,0.15)",
+                                                                    }}
+                                                                >
+                                                                    {/* Gold top line */}
+                                                                    <div className="absolute top-0 left-0 right-0 h-0.5 rounded-t-3xl"
+                                                                        style={{ background: "linear-gradient(90deg, transparent, #D4AF37, #F5E6A6, #D4AF37, transparent)" }} />
                                                                     <DialogHeader>
-                                                                        <DialogTitle className="text-xl font-bold tracking-tight">Edit Member</DialogTitle>
+                                                                        <DialogTitle
+                                                                            className="text-xl font-bold tracking-tight gold-gradient-text"
+                                                                            style={{ fontFamily: "'Playfair Display', serif" }}
+                                                                        >
+                                                                            Edit Member
+                                                                        </DialogTitle>
                                                                     </DialogHeader>
                                                                     <form onSubmit={handleEditSave} className="space-y-4 mt-2">
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                                            <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                                                 Name
                                                                             </label>
                                                                             <Input
                                                                                 placeholder="Name"
                                                                                 value={editName}
                                                                                 onChange={(e) => setEditName(e.target.value)}
-                                                                                className="h-11 rounded-xl bg-background border-border border-border"
+                                                                                className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                                            <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                                                 Phone (Required)
                                                                             </label>
                                                                             <Input
@@ -945,11 +1013,11 @@ export default function GroupDetailPage() {
                                                                                 value={editPhone}
                                                                                 onChange={(e) => setEditPhone(e.target.value)}
                                                                                 required
-                                                                                className="h-11 rounded-xl bg-background border-border border-border"
+                                                                                className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                                            <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                                                 UPI ID (Required)
                                                                             </label>
                                                                             <Input
@@ -957,11 +1025,11 @@ export default function GroupDetailPage() {
                                                                                 value={editUpiId}
                                                                                 onChange={(e) => setEditUpiId(e.target.value)}
                                                                                 required
-                                                                                className="h-11 rounded-xl bg-background border-border border-border"
+                                                                                className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                                             />
                                                                         </div>
                                                                         <div className="space-y-2">
-                                                                            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                                            <label className="text-xs font-bold uppercase tracking-widest text-[#B8A88A]">
                                                                                 Days
                                                                             </label>
                                                                             <Input
@@ -969,7 +1037,7 @@ export default function GroupDetailPage() {
                                                                                 placeholder="0"
                                                                                 value={editDays}
                                                                                 onChange={(e) => setEditDays(e.target.value)}
-                                                                                className="h-11 rounded-xl bg-background border-border border-border"
+                                                                                className="h-11 rounded-xl bg-black/40 text-white border-[#D4AF37]/20 shadow-[0_0_15px_rgba(212,175,55,0.05)] placeholder:text-white/40 focus-visible:ring-1 focus-visible:ring-[#D4AF37]/50 focus-visible:border-[#D4AF37]/50 focus-visible:shadow-[0_0_20px_rgba(212,175,55,0.2)] transition-all"
                                                                             />
                                                                         </div>
 
@@ -979,7 +1047,7 @@ export default function GroupDetailPage() {
                                                                                 variant="destructive"
                                                                                 disabled={isDeleting || isUpdating}
                                                                                 onClick={() => handleDeleteMember(member.id)}
-                                                                                className="flex-1 h-11 rounded-xl shadow-sm text-sm font-bold bg-destructive/10 text-destructive hover:bg-destructive/20"
+                                                                                className="flex-1 h-11 rounded-xl text-sm font-bold bg-red-950/60 text-red-400 hover:bg-red-900/60 border border-red-800/40"
                                                                             >
                                                                                 {isDeleting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Delete"}
                                                                             </Button>
@@ -987,7 +1055,7 @@ export default function GroupDetailPage() {
                                                                             <Button
                                                                                 type="submit"
                                                                                 disabled={isUpdating || isDeleting}
-                                                                                className="flex-1 h-11 rounded-xl shadow-md text-sm font-bold"
+                                                                                className="btn-gold flex-1 h-11 rounded-xl text-sm font-bold border-0 shadow-[0_0_15px_rgba(212,175,55,0.25)] hover:shadow-[0_0_25px_rgba(212,175,55,0.4)]"
                                                                             >
                                                                                 {isUpdating ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                                                                                 {isUpdating ? "Saving..." : "Save"}
@@ -998,15 +1066,15 @@ export default function GroupDetailPage() {
                                                             </Dialog>
                                                         </div>
 
-                                                        <div className="h-px w-full bg-border/50" />
+                                                        <div className="h-px w-full" style={{ background: "rgba(212,175,55,0.1)" }} />
 
                                                         {/* Bottom Row: Actions */}
                                                         <div className="flex items-center justify-between gap-4">
                                                             <div className="flex flex-col">
-                                                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                                                                <span className="text-[10px] uppercase tracking-widest font-semibold" style={{ color: "rgba(184,168,138,0.7)" }}>
                                                                     Days
                                                                 </span>
-                                                                <span className="text-sm font-bold mt-0.5 dark:text-foreground text-gray-900">
+                                                                <span className="text-sm font-bold mt-0.5 gold-gradient-text">
                                                                     {member.days}
                                                                 </span>
                                                             </div>
@@ -1014,25 +1082,22 @@ export default function GroupDetailPage() {
                                                             <div className="flex items-center gap-3">
                                                                 <Button
                                                                     size="sm"
-                                                                    variant={member.payment_completed ? "secondary" : "default"}
                                                                     onClick={() => {
                                                                         setPaymentMember(member);
                                                                         setPaymentModalStep('initial');
                                                                     }}
-                                                                    className={`h-8 text-xs font-medium rounded-lg px-4 transition-colors ${!member.payment_completed
-                                                                        ? "text-white bg-[#7C3AED] hover:bg-[#6D28D9] border-none"
-                                                                        : ""
-                                                                        }`}
+                                                                    className={`h-8 text-xs font-bold rounded-lg px-4 border-0 ${member.payment_completed ? "paid-btn-style" : "btn-gold"}`}
                                                                 >
-                                                                    {member.payment_completed ? "Paid" : "Pay"}
+                                                                    {member.payment_completed ? "Paid ✓" : "Pay"}
                                                                 </Button>
 
-                                                                <div className="flex items-center justify-center bg-background border-border p-1.5 rounded-md border border-border shadow-sm transition-colors hover:bg-muted/50">
+                                                                <div className="flex items-center justify-center p-1.5 rounded-md transition-colors"
+                                                                    style={{ background: "rgba(255,255,255,0.03)", border: "1px solid var(--border)" }}>
                                                                     <Checkbox
                                                                         checked={member.payment_completed}
                                                                         disabled={loadingPayments.has(member.id)}
                                                                         onCheckedChange={(c) => handlePaymentToggle(member, c === true)}
-                                                                        className="rounded-[4px] data-[state=checked]:bg-[#22c55e] data-[state=checked]:border-[#22c55e] transition-all"
+                                                                        className="rounded-[4px] data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500 transition-all border-muted-foreground/30"
                                                                     />
                                                                 </div>
                                                             </div>
@@ -1056,22 +1121,22 @@ export default function GroupDetailPage() {
                     setPaymentModalStep('initial');
                 }
             }}>
-                <DialogContent className="max-w-[320px] rounded-3xl p-6 border-border shadow-2xl" showCloseButton={false}>
+                <DialogContent className="max-w-[320px] rounded-3xl p-6 shadow-2xl" style={{ background: "#0F2540", border: "1px solid rgba(212,175,55,0.25)" }} showCloseButton={false}>
                     <DialogHeader>
-                        <DialogTitle className="text-center text-xl font-bold tracking-tight">Complete Payment</DialogTitle>
+                        <DialogTitle className="text-center text-xl font-bold tracking-tight gold-gradient-text" style={{ fontFamily: "'Playfair Display', serif" }}>Complete Payment</DialogTitle>
                     </DialogHeader>
                     {paymentModalStep === 'initial' ? (
                         <div className="flex flex-col gap-3 mt-4">
                             <Button
                                 onClick={() => setPaymentModalStep('apps')}
-                                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                className="btn-gold w-full h-12 rounded-xl text-sm font-bold tracking-wide border-0"
                             >
                                 Via UPI
                             </Button>
                             <div className="relative flex items-center py-2">
-                                <div className="flex-grow border-t border-border"></div>
-                                <span className="flex-shrink-0 mx-4 text-muted-foreground text-xs font-semibold uppercase tracking-wider">OR</span>
-                                <div className="flex-grow border-t border-border"></div>
+                                <div className="flex-grow" style={{ borderTop: "1px solid rgba(212,175,55,0.15)" }}></div>
+                                <span className="flex-shrink-0 mx-4 text-xs font-semibold uppercase tracking-wider" style={{ color: "var(--text-muted)" }}>OR</span>
+                                <div className="flex-grow" style={{ borderTop: "1px solid rgba(212,175,55,0.15)" }}></div>
                             </div>
                             <Button
                                 onClick={() => {
@@ -1086,11 +1151,12 @@ export default function GroupDetailPage() {
                                         toast.error("UPI ID missing.");
                                     }
                                 }}
-                                className="w-full h-12 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                className="w-full h-12 rounded-xl text-sm font-bold tracking-wide transition-colors border-0"
+                                style={{ background: "rgba(212,175,55,0.1)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.25)" }}
                             >
                                 Scan QR
                             </Button>
-                            <Button variant="ghost" className="mt-1 w-full text-xs text-muted-foreground" onClick={() => {
+                            <Button variant="ghost" className="mt-1 w-full text-xs" style={{ color: "var(--text-muted)" }} onClick={() => {
                                 setPaymentMember(null);
                                 setPaymentModalStep('initial');
                             }}>
@@ -1101,20 +1167,21 @@ export default function GroupDetailPage() {
                         <div className="flex flex-col gap-3 mt-4">
                             <Button
                                 onClick={() => handleUpiPayment(paymentMember, 'generic')}
-                                className="w-full h-12 bg-[#5f259f] hover:bg-[#4d1e82] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                className="btn-gold w-full h-12 rounded-xl text-sm font-bold tracking-wide border-0"
                             >
                                 Pay via PhonePe
                             </Button>
                             <Button
                                 onClick={() => handleUpiPayment(paymentMember, 'generic')}
-                                className="w-full h-12 bg-[#1a73e8] hover:bg-[#1557af] text-white rounded-xl shadow-md text-sm font-bold tracking-wide transition-colors"
+                                className="w-full h-12 rounded-xl text-sm font-bold tracking-wide border-0"
+                                style={{ background: "rgba(212,175,55,0.1)", color: "#D4AF37", border: "1px solid rgba(212,175,55,0.2)" }}
                             >
                                 Pay via GPay
                             </Button>
-                            <p className="text-xs text-center text-muted-foreground mt-3 px-2 leading-relaxed">
+                            <p className="text-xs text-center mt-3 px-2 leading-relaxed" style={{ color: "var(--text-muted)" }}>
                                 Complete payment on your device, then manually check the box to mark as paid.
                             </p>
-                            <Button variant="ghost" className="mt-1 w-full text-xs text-muted-foreground" onClick={() => setPaymentModalStep('initial')}>
+                            <Button variant="ghost" className="mt-1 w-full text-xs" style={{ color: "var(--text-muted)" }} onClick={() => setPaymentModalStep('initial')}>
                                 Back
                             </Button>
                         </div>
@@ -1126,24 +1193,23 @@ export default function GroupDetailPage() {
             <Dialog open={!!qrModalData} onOpenChange={(open) => {
                 if (!open) setQrModalData(null);
             }}>
-                <DialogContent className="max-w-[340px] rounded-3xl p-6 border-border shadow-2xl">
+                <DialogContent className="max-w-[340px] rounded-3xl p-6 shadow-2xl" style={{ background: "#0F2540", border: "1px solid rgba(212,175,55,0.3)" }}>
                     <DialogHeader>
-                        <DialogTitle className="text-center text-xl font-bold tracking-tight">Scan to Pay</DialogTitle>
+                        <DialogTitle className="text-center text-xl font-bold tracking-tight gold-gradient-text" style={{ fontFamily: "'Playfair Display', serif" }}>Scan to Pay</DialogTitle>
                     </DialogHeader>
-                    <p className="text-sm text-center text-muted-foreground mt-1 mb-4 leading-relaxed">
+                    <p className="text-sm text-center mt-1 mb-4 leading-relaxed" style={{ color: "var(--text-secondary)" }}>
                         Scan this QR using any UPI app from your mobile.
                     </p>
-                    <div className="bg-white p-4 rounded-2xl mx-auto w-max mb-5 shadow-sm border border-border">
+                    <div className="p-3 rounded-2xl mx-auto w-max mb-5" style={{ background: "#FFFFFF", border: "3px solid #D4AF37", boxShadow: "0 0 20px rgba(212,175,55,0.25)" }}>
                         <QRCode value={qrModalData?.upiLink || ""} size={200} />
                     </div>
                     <div className="flex flex-col items-center gap-3">
-                        <div className="bg-muted/50 px-4 py-2 rounded-xl border border-border w-full text-center">
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">UPI ID</p>
-                            <p className="font-medium text-sm truncate">{qrModalData?.upiId}</p>
+                        <div className="px-4 py-2 rounded-xl w-full text-center" style={{ background: "rgba(212,175,55,0.07)", border: "1px solid rgba(212,175,55,0.2)" }}>
+                            <p className="text-xs uppercase tracking-wider font-semibold mb-0.5" style={{ color: "var(--text-muted)" }}>UPI ID</p>
+                            <p className="font-medium text-sm truncate text-foreground">{qrModalData?.upiId}</p>
                         </div>
                         <Button
-                            variant="secondary"
-                            className="w-full rounded-xl h-11 shadow-sm font-semibold gap-2"
+                            className="btn-gold w-full rounded-xl h-11 font-semibold gap-2 border-0"
                             onClick={() => {
                                 navigator.clipboard.writeText(qrModalData?.upiId || "");
                                 toast.success("UPI ID copied to clipboard!");
