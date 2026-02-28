@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   reactStrictMode: true,
   compress: true,
   poweredByHeader: false,
@@ -16,6 +17,29 @@ const nextConfig: NextConfig = {
 
   compiler: {
     removeConsole: process.env.NODE_ENV === "production",
+  },
+
+  async headers() {
+    return [
+      {
+        source: "/:all*(svg|jpg|png|webp|avif|ico)",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
+          },
+        ],
+      },
+    ];
+  },
+
+  async rewrites() {
+    return [
+      {
+        source: '/supabase-proxy/:path*',
+        destination: `https://hvpbmgkurabdjyyyjeeq.supabase.co/:path*`, // Proxy to Supabase directly
+      },
+    ];
   },
 };
 

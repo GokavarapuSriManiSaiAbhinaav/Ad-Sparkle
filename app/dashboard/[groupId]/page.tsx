@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
 import { Card } from "@/components/ui/card";
@@ -162,7 +163,7 @@ export default function GroupDetailPage() {
     // 1. Fetch Group details on initial load
     useEffect(() => {
         if (!groupId) {
-            router.push("/dashboard");
+            setError("Group ID missing.");
             return;
         }
 
@@ -178,7 +179,7 @@ export default function GroupDetailPage() {
 
                 if (error && error.code !== "PGRST116") throw error;
                 if (!data) {
-                    router.push("/dashboard");
+                    setError("Group not found.");
                     return;
                 }
                 if (data) setGroup(data);
@@ -222,7 +223,7 @@ export default function GroupDetailPage() {
             const allPromoters = pData ?? [];
 
             // Filter promoters
-            const activePromoters = allPromoters.filter((p) => {
+            const activePromoters = allPromoters.filter((p: Promoter) => {
                 if (!p.join_date) return true;
 
                 const jDate = new Date(p.join_date);
@@ -242,7 +243,7 @@ export default function GroupDetailPage() {
             setPromoters(activePromoters);
 
             let mData: any[] = [];
-            const promoterIds = activePromoters.map((p) => p.id);
+            const promoterIds = activePromoters.map((p: Promoter) => p.id);
 
             if (promoterIds.length > 0) {
                 // Fetch monthly records cleanly via relation using IN clause
@@ -316,8 +317,8 @@ export default function GroupDetailPage() {
             toast.info("📱 UPI deep links open natively only on Mobile devices.");
         }
 
-        window.location.href = upiLink;
-    }, []);
+        router.push(upiLink);
+    }, [router]);
 
     const handleAddMember = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -623,13 +624,14 @@ export default function GroupDetailPage() {
                 style={{ borderBottom: "1px solid rgba(212,175,55,0.12)" }}
             >
                 <div className="max-w-md md:max-w-6xl mx-auto px-4 md:px-8 py-4 flex items-center gap-3">
-                    <button
-                        onClick={() => router.back()}
+                    <Link
+                        href="/dashboard"
+                        prefetch={true}
                         className="flex h-8 w-8 items-center justify-center rounded-lg transition-colors"
                         style={{ color: "var(--text-muted)" }}
                     >
                         <ArrowLeft className="h-4 w-4" />
-                    </button>
+                    </Link>
                     <div className="flex-1 min-w-0">
                         <h1 className="text-base md:text-xl font-bold leading-tight line-clamp-2 md:line-clamp-none break-words gold-gradient-text"
                             style={{ fontFamily: "'Playfair Display', serif" }}>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,7 +40,6 @@ const STATS = [
 ];
 
 export default function HomePage() {
-  const router = useRouter();
 
   return (
     <main className="force-dark min-h-screen bg-background text-foreground overflow-hidden font-sans selection:bg-[#D4AF37]/20 relative">
@@ -71,10 +70,12 @@ export default function HomePage() {
         </div>
 
         <Button
-          onClick={() => router.push("/login")}
+          asChild
           className="btn-gold h-9 px-5 md:px-6 rounded-full text-sm font-bold border-0 min-h-[44px]"
         >
-          Sign In <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          <Link href="/login" prefetch={true}>
+            Sign In <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+          </Link>
         </Button>
       </nav>
 
@@ -113,19 +114,23 @@ export default function HomePage() {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
             <Button
-              onClick={() => router.push("/login")}
+              asChild
               className="btn-gold w-full sm:w-auto h-12 px-7 py-3 rounded-full font-bold text-sm border-0 min-h-[48px]"
             >
-              Admin Login
-              <ArrowRight className="ml-2 h-4 w-4" />
+              <Link href="/login" prefetch={true}>
+                Admin Login
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
             </Button>
             <Button
+              asChild
               variant="outline"
-              onClick={() => router.push("/login")}
               className="w-full sm:w-auto h-12 px-7 py-3 rounded-full font-semibold text-sm transition-transform duration-200 hover:scale-[1.02] gold-border text-foreground min-h-[48px]"
               style={{ background: "var(--secondary)", borderColor: "rgba(212,175,55,0.3)" }}
             >
-              View Dashboard
+              <Link href="/login" prefetch={true}>
+                View Dashboard
+              </Link>
             </Button>
           </div>
 

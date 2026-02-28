@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, memo } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { supabase } from "@/lib/supabase";
@@ -38,12 +39,8 @@ const SkeletonCard = memo(function SkeletonCard() {
 // ── Group card (memoized to prevent re-render on parent state change) ──────────
 const GroupCard = memo(function GroupCard({
     group,
-    onNavigate,
-    onPrefetch,
 }: {
     group: Group;
-    onNavigate: (id: string) => void;
-    onPrefetch: (id: string) => void;
 }) {
     const initials = (group.name || "G")
         .split(" ")
@@ -53,13 +50,10 @@ const GroupCard = memo(function GroupCard({
         .toUpperCase();
 
     return (
-        <div
-            role="button"
-            tabIndex={0}
+        <Link
+            href={`/dashboard/${group.id}`}
+            prefetch={true}
             aria-label={`Open group ${group.name}`}
-            onClick={() => onNavigate(group.id)}
-            onMouseEnter={() => onPrefetch(group.id)}
-            onKeyDown={(e) => e.key === "Enter" && onNavigate(group.id)}
             className="cursor-pointer group block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-[#D4AF37] rounded-2xl page-enter"
         >
             <div
@@ -115,7 +109,7 @@ const GroupCard = memo(function GroupCard({
                     />
                 </div>
             </div>
-        </div>
+        </Link>
     );
 });
 
@@ -145,14 +139,6 @@ export default function DashboardPage() {
         fetchGroups();
         return () => { cancelled = true; };
     }, []);
-
-    const handleNavigate = useCallback((id: string) => {
-        router.push(`/dashboard/${id}`);
-    }, [router]);
-
-    const handlePrefetch = useCallback((id: string) => {
-        router.prefetch(`/dashboard/${id}`);
-    }, [router]);
 
     return (
         <main className="min-h-screen bg-background text-foreground relative overflow-hidden font-sans">
@@ -261,8 +247,6 @@ export default function DashboardPage() {
                             <GroupCard
                                 key={group.id}
                                 group={group}
-                                onNavigate={handleNavigate}
-                                onPrefetch={handlePrefetch}
                             />
                         ))}
                     </div>

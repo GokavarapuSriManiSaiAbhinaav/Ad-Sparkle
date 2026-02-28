@@ -4,7 +4,7 @@ import { cookies } from "next/headers";
 export async function createClient() {
     const cookieStore = await cookies();
 
-    let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
+    let supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://hvpbmgkurabdjyyyjeeq.supabase.co';
     if (supabaseUrl && !supabaseUrl.startsWith('http')) {
         supabaseUrl = `https://${supabaseUrl}`;
     }
@@ -28,6 +28,9 @@ export async function createClient() {
                         // user sessions.
                     }
                 },
+            },
+            cookieOptions: {
+                name: 'sb-adsparkle-auth-token',
             },
         }
     );

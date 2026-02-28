@@ -60,7 +60,8 @@ export default function LoginPage() {
             }
 
             toast.success("Successfully logged in!");
-            router.push("/dashboard");
+            router.refresh();
+            router.replace("/dashboard");
         } catch (error: any) {
             toast.error(error.message || "Failed to log in.");
         } finally {
